@@ -12,12 +12,12 @@ This chatbot serves as your intelligent professional representative. It:
 2. **Extracts All Links** - Finds GitHub, LinkedIn, portfolio, and project URLs
 3. **Intelligently Scrapes** - Fetches GitHub repos/READMEs, profiles, and web content
 4. **Builds Deep Context** - Combines everything into comprehensive professional knowledge
-5. **Answers Professionally** - Uses Gemini 2.5 Flash to respond like YOU would in an interview
+5. **Answers Professionally** - Uses Groq API (LLaMA 3.1) to respond like YOU would in an interview
 
 ## ✨ Key Features
 
 ### 🎓 Production Quality
-- Clean, modular architecture (single 500-line file)
+- Clean, modular architecture
 - Comprehensive error handling for broken links, timeouts, missing files
 - Multiple encoding fallback for international resumes
 - Intelligent content truncation to avoid token limits
@@ -41,10 +41,9 @@ This chatbot serves as your intelligent professional representative. It:
 
 ```
 agentic-ai/
-├── main.py              # Complete chatbot (500 lines, production-ready)
+├── main.py              # Complete chatbot (production-ready)
 ├── requirements.txt     # Minimal dependencies
-├── .env                 # Your Gemini API key (create this)
-├── .env.example         # Template
+├── .env                 # Your Groq API key (create this)
 ├── .gitignore          
 ├── README.md           # This file
 └── docs/
@@ -74,7 +73,7 @@ agentic-ai/
 - build_professional_context()
 
 # AI Generation (60 lines)
-- generate_professional_response()  # Optimized prompt engineering
+- call_groq_llm()  # Groq API integration with strict prompts
 
 # Main Application (90 lines)
 - main()  # Orchestrates everything
@@ -101,7 +100,7 @@ pip install -r requirements.txt
 ```
 
 **What gets installed:**
-- `google-generativeai` - Gemini API client
+- `groq` - Groq API client (LLaMA 3.1)
 - `pypdf` - PDF resume parsing
 - `python-docx` - Word document support
 - `requests` - HTTP client for web scraping
@@ -114,11 +113,11 @@ pip install -r requirements.txt
 # Copy example
 cp .env.example .env
 
-# Add your Gemini API key to .env
-echo "GEMINI_API_KEY=your_actual_key_here" > .env
+# Add your Groq API key to .env
+echo "GROQ_API_KEY=your_actual_key_here" > .env
 ```
 
-Get your free API key: https://makersuite.google.com/app/apikey
+Get your free API key: https://console.groq.com/keys
 
 ### 4. Add Your Resume
 
@@ -352,7 +351,7 @@ if len(text) > 8000:  # Adjust token limit
 
 ### Customize AI Response Style
 
-Edit the prompt in `generate_professional_response()` (line ~350) to adjust:
+Edit the prompt in `call_groq_llm()` to adjust:
 - Tone (formal vs conversational)
 - Perspective (first-person vs third-person)
 - Detail level (concise vs comprehensive)
@@ -360,10 +359,10 @@ Edit the prompt in `generate_professional_response()` (line ~350) to adjust:
 
 ## 🛠️ Troubleshooting
 
-### Issue: "GEMINI_API_KEY not found"
+### Issue: "GROQ_API_KEY not found"
 ```bash
 # Solution: Create .env file
-echo "GEMINI_API_KEY=your_key_here" > .env
+echo "GROQ_API_KEY=your_key_here" > .env
 ```
 
 ### Issue: "No resume found"
@@ -428,7 +427,7 @@ echo ".env" >> .gitignore
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| google-generativeai | 0.8.3 | Gemini API client |
+| groq | 1.0.0 | Groq API client (LLaMA 3.1) |
 | pypdf | 4.0.1 | PDF parsing |
 | python-docx | 1.1.0 | Word document parsing |
 | requests | 2.31.0 | HTTP client |
@@ -443,7 +442,7 @@ echo ".env" >> .gitignore
 - ✅ Timeout protection on web requests
 - ✅ Content truncation prevents token exhaustion
 - ✅ Error messages don't expose sensitive info
-- ✅ Local processing (your data doesn't leave your machine except for Gemini API)
+- ✅ Local processing (your data doesn't leave your machine except for Groq API)
 
 ## 📖 Code Quality
 
@@ -470,7 +469,7 @@ echo ".env" >> .gitignore
 This project demonstrates:
 - Document parsing (PDF, Word)
 - Web scraping best practices
-- API integration (Gemini)
+- API integration (Groq)
 - Prompt engineering
 - Error handling patterns
 - Production-ready Python
@@ -495,7 +494,7 @@ Built with ❤️ for professional representation
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "GEMINI_API_KEY=your_key" > .env
+echo "GROQ_API_KEY=your_key" > .env
 
 # Add resume
 cp your_resume.pdf docs/
@@ -507,5 +506,5 @@ python main.py "Your question here"
 deactivate
 ```
 
-**Built with Python + Gemini 2.5 Flash**  
+**Built with Python + Groq API (LLaMA 3.1)**  
 **Production-Ready. Professional. Powerful.**
