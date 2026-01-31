@@ -36,8 +36,17 @@ except ImportError:
 
 MEMORY_FILE = Path("memory.json")
 MAX_CONTEXT_SIZE = 6000
-MAX_RESPONSE_WORDS = 80
+MAX_RESPONSE_WORDS = 120
 SEARCHAPI_FREE_TIER_LIMIT = 100
+
+# Project priority: LinkUp is the primary/most recent project
+LINKUP_NAMES = ("linkup", "link-up", "link up")
+PROJECT_JSON_NAMES = ("project.json", "projects.json")
+KEYWORD_TECH_PATTERNS = (
+    "firebase", "react native", "real-time", "realtime", "chat", "auth",
+    "next.js", "nextjs", "mongodb", "socket", "typescript", "tailwind",
+    "aws", "node", "express", "gemini", "ai", "nodemailer", "shadcn",
+)
 
 
 def clean_latex_text(text: str) -> str:
@@ -145,6 +154,7 @@ def is_project_intent_question(question: str) -> bool:
         r'what.*created',
         r'show\s+me.*project',
         r'portfolio\s+project',
+        r'explain\s+(your|this)\s+project',
     ]
     
     for pattern in project_intent_patterns:
@@ -152,6 +162,246 @@ def is_project_intent_question(question: str) -> bool:
             return True
     
     return False
+
+
+def requires_linkup_only(question: str) -> bool:
+    """True if the question must be answered with LinkUp only (no other projects)."""
+    q = question.lower().strip()
+    patterns = [
+        r'explain\s+(your|this)\s+project',
+        r'tell\s+me\s+about\s+your\s+project',
+        r'most\s+recent\s+project',
+        r'main\s+project',
+        r'best\s+project',
+        r'walk\s+me\s+through\s+(your\s+)?project',
+    ]
+    for p in patterns:
+        if re.search(p, q):
+            return True
+    return False
+
+
+def explicit_linkup_mention(question: str) -> bool:
+    """True if the user explicitly asked about LinkUp."""
+    q = question.lower()
+    return any(name in q for name in LINKUP_NAMES)
+
+
+def detect_project_intent(question: str) -> str:
+    """
+    Returns: 'linkup_only' | 'explicit_linkup' | 'keyword' | 'general'
+    """
+    q = question.lower()
+    if explicit_linkup_mention(question):
+        return 'explicit_linkup'
+    if requires_linkup_only(question):
+        return 'linkup_only'
+    for kw in KEYWORD_TECH_PATTERNS:
+        if kw in q:
+            return 'keyword'
+    if is_project_intent_question(question):
+        return 'general'
+    return 'general'
+
+
+def load_project_json(docs_dir: str = "docs") -> Optional[Dict]:
+    """
+    Load docs/project.json or docs/projects.json.
+    Returns dict with keys: 'projects' (list), 'linkup' (dict or None), 'text_for_rag' (str).
+    """
+    docs_path = Path(docs_dir)
+    raw = None
+    for name in PROJECT_JSON_NAMES:
+        f = docs_path / name
+        if f.exists():
+            try:
+                with open(f, "r", encoding="utf-8") as fp:
+                    raw = json.load(fp)
+                break
+            except Exception:
+                raw = None
+    if not raw:
+        return None
+    
+    # Normalize: support both { "courses": [...], "prev": [...] } and { "projects": [...] }
+    all_entries = []
+    if "courses" in raw:
+        all_entries.extend(raw["courses"])
+    if "prev" in raw:
+        all_entries.extend(raw["prev"])
+    if "projects" in raw:
+        all_entries.extend(raw["projects"])
+    
+    if not all_entries:
+        return None
+    
+    linkup_entry = None
+    for entry in all_entries:
+        title = (entry.get("title") or "").strip().lower()
+        slug = (entry.get("slug") or "").strip().lower()
+        if "linkup" in title or "linkup" in slug or "link-up" in title or "link-up" in slug:
+            linkup_entry = entry
+            break
+    
+    def project_to_text(p: Dict) -> str:
+        parts = [p.get("title") or "", p.get("description") or ""]
+        tech = p.get("tech") or []
+        if isinstance(tech, list):
+            names = [t.get("name") if isinstance(t, dict) else str(t) for t in tech]
+            parts.append("Tech: " + ", ".join(names))
+        else:
+            parts.append("Tech: " + str(tech))
+        return " | ".join(p for p in parts if p)
+    
+    text_parts = []
+    for p in all_entries:
+        text_parts.append(project_to_text(p))
+    text_for_rag = "\n\n---\n\n".join(text_parts)
+    
+    return {
+        "projects": all_entries,
+        "linkup": linkup_entry,
+        "text_for_rag": text_for_rag,
+        "linkup_text": project_to_text(linkup_entry) if linkup_entry else "",
+    }
+
+
+def prioritize_linkup_project(
+    sections: Dict[str, str],
+    project_data: Optional[Dict],
+    web_content: List[Tuple[str, str]],
+    full_resume: str,
+    max_length: int = MAX_CONTEXT_SIZE,
+) -> str:
+    """
+    Build context containing ONLY LinkUp (resume + project.json + web).
+    Do not include other projects.
+    """
+    parts = []
+    current_length = 0
+    
+    # 1) project.json LinkUp entry (first-class)
+    if project_data and project_data.get("linkup_text"):
+        chunk = "--- PROJECT (project.json - LinkUp) ---\n" + project_data["linkup_text"] + "\n"
+        if current_length + len(chunk) <= max_length:
+            parts.append(chunk)
+            current_length += len(chunk)
+    
+    # 2) Resume PROJECTS section: extract only LinkUp block
+    projects_section = (sections.get("PROJECTS") or sections.get("OTHER") or "").strip()
+    if projects_section:
+        linkup_match = re.search(
+            r'(LinkUp|Link-Up)[^\n]*.*?(?=\n\n(?:[A-Z][a-z]+|MealLogger|Melo|EXPERIENCE|EDUCATION|SKILLS)|\Z)',
+            projects_section,
+            re.DOTALL | re.IGNORECASE
+        )
+        if linkup_match:
+            block = linkup_match.group(0).strip()
+            if len(block) > 2000:
+                block = block[:2000] + "..."
+            chunk = "--- RESUME (LinkUp) ---\n" + block + "\n"
+            if current_length + len(chunk) <= max_length:
+                parts.append(chunk)
+                current_length += len(chunk)
+    
+    # 3) Web content that mentions LinkUp (if any)
+    for source, content in web_content:
+        if content and ("linkup" in content.lower() or "link-up" in content.lower()):
+            chunk = f"--- {source} ---\n" + content[:800] + "\n"
+            if current_length + len(chunk) <= max_length:
+                parts.append(chunk)
+                current_length += len(chunk)
+            break
+    
+    if not parts:
+        # Fallback: full resume PROJECTS section truncated
+        if projects_section and current_length < max_length:
+            trunc = projects_section[: max_length - 200]
+            parts.append("--- RESUME PROJECTS ---\n" + trunc + "\n")
+    
+    return "\n".join(parts) if parts else ""
+
+
+def keyword_context_search(
+    keyword: str,
+    sections: Dict[str, str],
+    full_resume: str,
+    project_data: Optional[Dict],
+    web_content: List[Tuple[str, str]],
+    max_length: int = MAX_CONTEXT_SIZE,
+) -> str:
+    """
+    Search for keyword in resume, project.json, web. Prefer LinkUp if keyword matches it.
+    Return concatenated matching content.
+    """
+    kw_lower = keyword.lower().strip()
+    parts = []
+    current_length = 0
+    
+    def add_chunk(header: str, text: str, cap: int = 1500) -> None:
+        nonlocal current_length
+        if not text or current_length >= max_length:
+            return
+        if kw_lower not in text.lower():
+            return
+        chunk = f"--- {header} ---\n" + (text[:cap] if len(text) > cap else text) + "\n"
+        if current_length + len(chunk) <= max_length:
+            parts.append(chunk)
+            current_length += len(chunk)
+    
+    # Prefer LinkUp if it matches the keyword
+    if project_data and project_data.get("linkup_text"):
+        lt = project_data["linkup_text"]
+        if kw_lower in lt.lower():
+            add_chunk("PROJECT (LinkUp)", lt, 1200)
+    
+    # project.json all projects (for keyword match)
+    if project_data and project_data.get("text_for_rag"):
+        add_chunk("PROJECTS (project.json)", project_data["text_for_rag"], 2500)
+    
+    # Resume
+    for name, content in sections.items():
+        if content and kw_lower in content.lower():
+            add_chunk(f"RESUME_{name}", content, 1200)
+    if full_resume and kw_lower in full_resume.lower():
+        add_chunk("RESUME", full_resume, 1500)
+    
+    # Web
+    for source, content in web_content:
+        if content and kw_lower in content.lower():
+            add_chunk(source, content, 600)
+    
+    return "\n".join(parts) if parts else ""
+
+
+def enforce_first_person_voice(response: str) -> str:
+    """
+    Post-process LLM output to fix common third-person phrasing.
+    Replace "you" / "the candidate" / "the developer" with first person where appropriate.
+    """
+    if not response or len(response) < 10:
+        return response
+    # Common third-person patterns -> first person
+    replacements = [
+        (r"\bYou\s+worked\b", "I worked"),
+        (r"\byou\s+worked\b", "I worked"),
+        (r"\bThe\s+candidate\s+", "I "),
+        (r"\bthe\s+candidate\s+", "I "),
+        (r"\bThe\s+developer\s+", "I "),
+        (r"\bthe\s+developer\s+", "I "),
+        (r"\bThis\s+candidate\s+", "I "),
+        (r"\bThis\s+developer\s+", "I "),
+        (r"\bThey\s+built\b", "I built"),
+        (r"\bthey\s+built\b", "I built"),
+        (r"\bHe\s+built\b", "I built"),
+        (r"\bShe\s+built\b", "I built"),
+        (r"\bHe\s+worked\b", "I worked"),
+        (r"\bShe\s+worked\b", "I worked"),
+    ]
+    out = response
+    for pat, repl in replacements:
+        out = re.sub(pat, repl, out, flags=re.IGNORECASE)
+    return out
 
 
 def classify_question(question: str) -> List[str]:
@@ -379,29 +629,72 @@ def rank_context_sources(
     return ranked
 
 
+def _extract_keyword_from_question(question: str) -> Optional[str]:
+    """Return the first tech keyword found in the question."""
+    q = question.lower()
+    for kw in KEYWORD_TECH_PATTERNS:
+        if kw in q:
+            return kw
+    return None
+
+
 def select_relevant_context(
     sections: Dict[str, str],
     web_content: List[Tuple[str, str]],
     question: str,
     searchapi_content: Optional[str] = None,
     full_resume: str = "",
+    project_data: Optional[Dict] = None,
     max_length: int = MAX_CONTEXT_SIZE
 ) -> str:
+    intent = detect_project_intent(question)
+    
+    # 1) LinkUp-only: explain your project, most recent, main, best, or explicit "LinkUp"
+    if intent in ("linkup_only", "explicit_linkup"):
+        ctx = prioritize_linkup_project(
+            sections, project_data, web_content, full_resume, max_length
+        )
+        if ctx:
+            return ctx
+        # No LinkUp context: return minimal instruction so we do not mix other projects
+        return (
+            "--- INSTRUCTION ---\n"
+            "The user asked about LinkUp or their main/most recent project. "
+            "No LinkUp-specific context was found in resume or project.json. "
+            "Respond in first person that you do not have LinkUp details in your materials, "
+            "and do not mention other projects."
+        )
+    
+    # 2) Keyword-based: e.g. "which project uses Firebase?"
+    kw = _extract_keyword_from_question(question)
+    if kw and project_data is not None:
+        ctx = keyword_context_search(
+            kw, sections, full_resume, project_data, web_content, max_length
+        )
+        if ctx:
+            return ctx
+    
+    # 3) General: use existing RAG flow, but inject project.json LinkUp first when project-related
     relevant_section_names = classify_question(question)
     is_project_question = is_project_intent_question(question)
-    
     ranked_sources = rank_context_sources(sections, web_content, searchapi_content)
     
     context_parts = []
     current_length = 0
     
-    total_resume_size = sum(len(v) for v in sections.values() if v)
+    # Prefer project.json LinkUp at top when answering project questions
+    if is_project_question and project_data and project_data.get("linkup_text"):
+        chunk = "--- PROJECT (project.json - LinkUp) ---\n" + project_data["linkup_text"] + "\n"
+        if len(chunk) <= max_length:
+            context_parts.append(chunk)
+            current_length += len(chunk)
     
+    total_resume_size = sum(len(v) for v in sections.values() if v)
     if total_resume_size < 1000:
         relevant_section_names = [k for k, v in sections.items() if v.strip()]
     
-    linkup_content = None
-    if is_project_question:
+    # Resume: for project questions, prefer LinkUp block only (no mixing)
+    if is_project_question and intent != "keyword":
         projects_section = sections.get('PROJECTS', '') or sections.get('OTHER', '')
         if projects_section:
             linkup_match = re.search(
@@ -413,15 +706,12 @@ def select_relevant_context(
                 linkup_content = linkup_match.group(0).strip()
                 if len(linkup_content) > 1500:
                     linkup_content = linkup_content[:1500] + "..."
-                print("[PROJECT] Prioritizing LinkUp as primary project")
-                header = "--- PROJECTS (LinkUp - PRIMARY) ---"
+                header = "--- RESUME (LinkUp) ---"
                 content_chunk = f"{header}\n{linkup_content}\n"
-                if len(content_chunk) <= max_length:
+                if current_length + len(content_chunk) <= max_length:
                     context_parts.append(content_chunk)
                     current_length += len(content_chunk)
                     relevant_section_names = [s for s in relevant_section_names if s != 'PROJECTS']
-            else:
-                print("[PROJECT] Warning: LinkUp not found in resume, using available projects")
     
     added_sections = []
     for section_name in relevant_section_names:
@@ -429,7 +719,6 @@ def select_relevant_context(
         if section_content and current_length < max_length:
             header = f"--- {section_name} ---"
             content_chunk = f"{header}\n{section_content}\n"
-            
             if current_length + len(content_chunk) <= max_length:
                 context_parts.append(content_chunk)
                 current_length += len(content_chunk)
@@ -450,7 +739,6 @@ def select_relevant_context(
                 header = f"--- {fallback_section} ---"
                 truncated_content = section_content[:1500] if len(section_content) > 1500 else section_content
                 content_chunk = f"{header}\n{truncated_content}\n"
-                
                 if current_length + len(content_chunk) <= max_length:
                     context_parts.append(content_chunk)
                     current_length += len(content_chunk)
@@ -673,20 +961,21 @@ def call_groq_llm(
         if use_memory:
             memory_hint = f"\nNote: Similar question was asked before. Use this as reference but ensure accuracy: {use_memory.get('answer', '')[:100]}"
         
-        system_prompt = """You are a professional resume assistant.
+        system_prompt = """You ARE the person whose resume this is. You speak in first person only.
 
-Answer using the provided resume context.
-If the answer is not explicitly stated, INFER it from resume experience, skills, or projects.
-Only say "Not found in resume" if NO relevant information exists.
-
-For project-related questions, prioritize LinkUp as the primary/most recent project.
+CRITICAL RULES:
+- Always use "I": "I built", "I worked on", "I focused on", "I used".
+- NEVER use "you", "the candidate", "the developer", "they built", "he/she worked".
+- If asked about projects, answer only about the project(s) in the context (e.g. LinkUp when that is provided). Do not mix or invent projects.
+- Use the provided context (resume, project.json, GitHub). Only say "Not found" if there is truly no relevant information.
+- For "explain your project" or "most recent project" or "LinkUp": answer ONLY about LinkUp using the context given.
 
 Response style:
-- Short and direct, like a text message
-- Simple English
-- No bullet points, no markdown, no formatting
-- Maximum 80 words
-- Just answer the question naturally"""
+- First person, confident, professional
+- 4–7 short bullet points OR a short paragraph
+- Maximum 120 words
+- No raw file dumps, no config lists
+- UX-friendly explanations"""
         
         user_message = f"""CONTEXT:
 {context}
@@ -704,11 +993,12 @@ RESPONSE (concise and direct):"""
                 {"role": "user", "content": user_message}
             ],
             temperature=0.2,
-            max_tokens=150,
+            max_tokens=220,
             stream=False
         )
         
         answer = response.choices[0].message.content.strip()
+        answer = enforce_first_person_voice(answer)
         
         words = answer.split()
         if len(words) > MAX_RESPONSE_WORDS + 20:
@@ -775,6 +1065,12 @@ def main():
         print("\n❌ Error: No resume found in docs/ directory\n")
         sys.exit(1)
     
+    project_data = load_project_json("docs")
+    if project_data and project_data.get("linkup"):
+        print("[CTX] project.json/projects.json loaded (LinkUp as primary project)")
+    elif project_data:
+        print("[CTX] project.json/projects.json loaded")
+    
     resume_files = []
     docs_path = Path("docs")
     if (docs_path / "resume.pdf").exists():
@@ -798,7 +1094,9 @@ def main():
             if web_content:
                 print(f"    ✓ Loaded {len(web_content)} GitHub source(s)")
     
-    initial_context = select_relevant_context(sections, web_content, question, full_resume=full_resume)
+    initial_context = select_relevant_context(
+        sections, web_content, question, full_resume=full_resume, project_data=project_data
+    )
     should_search, search_query, search_reason = should_use_web_augmentation(question, initial_context, sections, links)
     
     searchapi_content = None
@@ -815,7 +1113,8 @@ def main():
         print(f"[SEARCH] Would trigger SearchAPI (reason: {search_reason}) but API key not set")
     
     relevant_context = select_relevant_context(
-        sections, web_content, question, searchapi_content, full_resume=full_resume
+        sections, web_content, question, searchapi_content,
+        full_resume=full_resume, project_data=project_data
     )
     
     relevant_sections = classify_question(question)

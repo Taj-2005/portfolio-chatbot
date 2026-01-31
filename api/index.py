@@ -25,6 +25,7 @@ def _get_main():
     if _main is None:
         from main import (
             load_resume,
+            load_project_json,
             categorize_links,
             process_github_links,
             select_relevant_context,
@@ -34,6 +35,7 @@ def _get_main():
         )
         _main = {
             "load_resume": load_resume,
+            "load_project_json": load_project_json,
             "categorize_links": categorize_links,
             "process_github_links": process_github_links,
             "select_relevant_context": select_relevant_context,
@@ -44,20 +46,22 @@ def _get_main():
     return _main
 
 
-# Cache resume data per instance
+# Cache resume + project data per instance
 _sections = None
 _links = None
 _full_resume = None
 _web_content = None
+_project_data = None
 
 
 def load_resume_data():
-    global _sections, _links, _full_resume, _web_content
+    global _sections, _links, _full_resume, _web_content, _project_data
     if _sections is None:
         try:
             m = _get_main()
             docs_dir = str(_root / "docs")
             _sections, _links, _full_resume = m["load_resume"](docs_dir)
+            _project_data = m["load_project_json"](docs_dir)
             _web_content = []
             if _links:
                 cat = m["categorize_links"](_links)
@@ -73,7 +77,8 @@ def load_resume_data():
             _links = set()
             _full_resume = ""
             _web_content = []
-    return _sections, _links, _full_resume, _web_content
+            _project_data = None
+    return _sections, _links, _full_resume, _web_content, _project_data
 
 
 def _send_json(self, status, data):
@@ -149,14 +154,15 @@ class handler(BaseHTTPRequestHandler):
             return
 
         m = _get_main()
-        sections, links, full_resume, web_content = load_resume_data()
+        sections, links, full_resume, web_content, project_data = load_resume_data()
 
         if not sections or all(not v for v in sections.values()):
             _send_json(self, 500, {"error": "Resume not found in docs/"})
             return
 
         initial_context = m["select_relevant_context"](
-            sections, web_content, question, full_resume=full_resume
+            sections, web_content, question,
+            full_resume=full_resume, project_data=project_data
         )
         should_search, search_query, _ = m["should_use_web_augmentation"](
             question, initial_context, sections, links
@@ -167,7 +173,8 @@ class handler(BaseHTTPRequestHandler):
             searchapi_content = m["fetch_searchapi_context"](search_query, searchapi_key)
 
         relevant_context = m["select_relevant_context"](
-            sections, web_content, question, searchapi_content, full_resume=full_resume
+            sections, web_content, question, searchapi_content,
+            full_resume=full_resume, project_data=project_data
         )
         answer = m["call_groq_llm"](question, relevant_context, groq_key)
 

@@ -1,0 +1,209 @@
+{
+  "courses": [
+    {
+      "id": 1,
+      "title": "LinkUp",
+      "slug": "linkup",
+      "description": "A modern social platform built to help people connect instantly, share meaningful links, and express themselves through rich, customizable profiles.",
+      "price": 149.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": null,
+      "livelink": "https://link-up-web.vercel.app/",
+      "image": "/linkup.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
+        { "name": "Socket.IO", "icon": "/icons/sockets.png" },
+        { "name": "AWS", "icon": "/icons/aws.png" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "AlgoJourney",
+      "slug": "algojourney",
+      "description": "Algo Journey is a web-based tracker for organizing and tracking LeetCode problems topic-wise, helping users systematically improve their problem-solving skills.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/algoJourney_v1",
+      "livelink": "https://algojourney-dsa-nst.vercel.app/",
+      "image": "/algojourney.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "Firebase", "icon": "/icons/firebase.svg" },
+        { "name": "JavaScript", "icon": "/icons/js.svg" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Treadly",
+      "slug": "treadly",
+      "description": "An interactive travel-themed quiz web app with custom modals, confetti animations, and smooth UX.",
+      "price": 0,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/treadly",
+      "livelink": "https://treadly.vercel.app/",
+      "isFeatured": true,
+      "image": "/treadly.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "JavaScript", "icon": "/icons/js.svg" },
+        { "name": "Gemini AI", "icon": "/icons/gemini.svg" }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Interdisciplinary Insights",
+      "slug": "interdisciplinary-insights",
+      "description": "Developed a web platform as part of the Fundamentals of System Thinking & Environment Hackathon.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/FSTE",
+      "livelink": "https://fste-hackathon-group47.vercel.app/",
+      "image": "/fste.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "Shadcn UI", "icon": "/icons/shadcn.png" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "DINE RESTAURANT WEBSITE",
+      "slug": "dine-restaurant",
+      "description": "A desktop-optimized restaurant website designed for a smooth UI experience.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/Dine-Restaurant",
+      "livelink": "https://dine-restaurant6.vercel.app/",
+      "image": "/restaurant.jpeg",
+      "tech": [
+        { "name": "HTML", "icon": "/icons/html.svg" },
+        { "name": "CSS", "icon": "/icons/css.svg" }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "UX Audit Tool",
+      "slug": "ux-audit-tool",
+      "description": "AI-powered and rule-based UX auditing tool for landing pages.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/ux-audit-app",
+      "livelink": "https://ux-audit-app.vercel.app/",
+      "image": "/ux-audit-tool.jpg",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Gemini AI", "icon": "/icons/gemini.svg" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Developer Portfolio",
+      "slug": "portfolio",
+      "description": "A personal portfolio website to showcase web development skills and projects. Built with HTML, CSS, and JavaScript, featuring a clean, structured layout and responsive design.",
+      "price": 109.99,
+      "instructor": "my self",
+      "isFeatured": false,
+      "github": "https://github.com/Taj-2005/myportfolio",
+      "livelink": "https://shaik-tajuddin.vercel.app/",
+      "image": "/portfoli.jpeg",
+      "tech": [
+        { "name": "HTML", "icon": "/icons/html.svg" },
+        { "name": "CSS", "icon": "/icons/css.svg" },
+        { "name": "JavaScript", "icon": "/icons/js.svg" }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Heuristic Evaluation Railweb",
+      "slug": "heuristic-evaluation",
+      "description": "A heuristic evaluation comparing user experience across multiple railway websites.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/Heuristical_Analysis_Railweb",
+      "livelink": "https://heuristical-analysis-railweb.vercel.app/",
+      "image": "/railweb.png",
+      "tech": [
+        { "name": "HTML", "icon": "/icons/html.svg" },
+        { "name": "CSS", "icon": "/icons/css.svg" }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Blink Tac Toe",
+      "slug": "blink-tac-toe",
+      "description": "Blink Tac Toe is a fast-paced emoji twist on the classic Tic Tac Toe game.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/BlinkTacToe",
+      "livelink": "https://blink-tac-toe-bice.vercel.app/",
+      "image": "/blinktactoe.jpeg",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "TIC-TAC-TOE-GAME",
+      "slug": "tic-tac-toe",
+      "description": "A classic two-player Tic Tac Toe game built with HTML, CSS, and JavaScript.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/TicTacToe",
+      "livelink": "https://tic-tac-toe-taj.vercel.app/",
+      "image": "/xo.jpeg",
+      "tech": [
+        { "name": "HTML", "icon": "/icons/html.svg" },
+        { "name": "CSS", "icon": "/icons/css.svg" },
+        { "name": "JavaScript", "icon": "/icons/js.svg" }
+      ]
+    }
+  ],
+  "prev": [
+    {
+      "id": 2,
+      "title": "Space-Themed Portfolio (This)",
+      "slug": "space-themed-portfolio",
+      "description": "A space-themed portfolio website with a sleek, mobile-responsive design and interactive animations. The site features a dynamic starry background and smooth transitions, providing an engaging user experience to showcase my projects and skills.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": null,
+      "livelink": "https://shaik-tajuddin-portfolio.vercel.app/",
+      "image": "/portfolio.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
+        { "name": "Github", "icon": "/icons/githubl.svg" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "PricePulse",
+      "slug": "pricepulse",
+      "description": "PricePulse tracks Amazon product prices, visualizes trends, and sends email alerts when prices drop below a target threshold.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/PricePulse",
+      "livelink": "https://amazon-pricepulse.vercel.app",
+      "image": "/pricepulse.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
+        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
+        { "name": "Nodemailer", "icon": "/icons/nodemailer.png" }
+      ]
+    }
+  ]
+}
