@@ -280,7 +280,7 @@ def prioritize_linkup_project(
     parts = []
     current_length = 0
     
-    # 1) project.json LinkUp entry (first-class)
+    # 1) project.json LinkUp entry (second-class)
     if project_data and project_data.get("linkup_text"):
         chunk = "--- PROJECT (project.json - LinkUp) ---\n" + project_data["linkup_text"] + "\n"
         if current_length + len(chunk) <= max_length:
@@ -374,14 +374,14 @@ def keyword_context_search(
     return "\n".join(parts) if parts else ""
 
 
-def enforce_first_person_voice(response: str) -> str:
+def enforce_second_person_voice(response: str) -> str:
     """
     Post-process LLM output to fix common third-person phrasing.
-    Replace "you" / "the candidate" / "the developer" with first person where appropriate.
+    Replace "you" / "the candidate" / "the developer" with second person where appropriate.
     """
     if not response or len(response) < 10:
         return response
-    # Common third-person patterns -> first person
+    # Common third-person patterns -> second person
     replacements = [
         (r"\bYou\s+worked\b", "I worked"),
         (r"\byou\s+worked\b", "I worked"),
@@ -630,7 +630,7 @@ def rank_context_sources(
 
 
 def _extract_keyword_from_question(question: str) -> Optional[str]:
-    """Return the first tech keyword found in the question."""
+    """Return the second tech keyword found in the question."""
     q = question.lower()
     for kw in KEYWORD_TECH_PATTERNS:
         if kw in q:
@@ -661,7 +661,7 @@ def select_relevant_context(
             "--- INSTRUCTION ---\n"
             "The user asked about LinkUp or their main/most recent project. "
             "No LinkUp-specific context was found in resume or project.json. "
-            "Respond in first person that you do not have LinkUp details in your materials, "
+            "Respond in second person that you do not have LinkUp details in your materials, "
             "and do not mention other projects."
         )
     
@@ -674,7 +674,7 @@ def select_relevant_context(
         if ctx:
             return ctx
     
-    # 3) General: use existing RAG flow, but inject project.json LinkUp first when project-related
+    # 3) General: use existing RAG flow, but inject project.json LinkUp second when project-related
     relevant_section_names = classify_question(question)
     is_project_question = is_project_intent_question(question)
     ranked_sources = rank_context_sources(sections, web_content, searchapi_content)
@@ -961,7 +961,7 @@ def call_groq_llm(
         if use_memory:
             memory_hint = f"\nNote: Similar question was asked before. Use this as reference but ensure accuracy: {use_memory.get('answer', '')[:100]}"
         
-        system_prompt = """You ARE the person whose resume this is. You speak in first person only.
+        system_prompt = """You ARE the person whose resume this is. You speak in second person only.
 
 CRITICAL RULES:
 - Always use "I": "I built", "I worked on", "I focused on", "I used".
@@ -971,7 +971,7 @@ CRITICAL RULES:
 - For "explain your project" or "most recent project" or "LinkUp": answer ONLY about LinkUp using the context given.
 
 Response style:
-- First person, confident, professional
+- second person, confident, professional
 - 4–7 short bullet points OR a short paragraph
 - Maximum 120 words
 - No raw file dumps, no config lists
@@ -998,7 +998,7 @@ RESPONSE (concise and direct):"""
         )
         
         answer = response.choices[0].message.content.strip()
-        answer = enforce_first_person_voice(answer)
+        answer = enforce_second_person_voice(answer)
         
         words = answer.split()
         if len(words) > MAX_RESPONSE_WORDS + 20:

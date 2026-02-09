@@ -1,6 +1,7 @@
 <h1 align="center">Hello there!<img src="https://raw.githubusercontent.com/akgarg0472/akgarg0472/main/.github/images/hi.gif" width="30px"> I’m Taj</h1>
 
-🌟 Passionate first-year Computer Science student with a knack for coding and a love for open-source contributions. Constantly seeking to learn and grow, I thrive on tackling complex challenges and collaborating with diverse communities. My enthusiasm for technology fuels my drive to innovate and create impactful solutions. Let's connect and build the future together!
+🌟 Passionate second-year Computer Science student with a knack for coding and a love for open-source contributions. Constantly seeking to learn and grow, I thrive on tackling complex challenges and collaborating with diverse communities. My enthusiasm for technology fuels my drive to innovate and create impactful solutions. Let's connect and build the future together!
+
 <h1 align="center"> 🌐 Socials</h1>
 <p align="center">
 <a href="https://www.linkedin.com/in/tajuddinshaik786/" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="tajuddin shaik" height="30" width="40" /></a>
@@ -61,8 +62,8 @@
   <img height="180em" src="https://github-profile-summary-cards.vercel.app/api/cards/productive-time?username=Taj-2005&theme=github_dark" />
 </div>
 
-
 [![An image of @taj786's Holopin badges, which is a link to view their full Holopin profile](https://holopin.me/taj786)](https://holopin.io/@taj786)
+
 <div align="center">
    
 <h1 align="center">🔝 Top Contributed Repos</h1>
