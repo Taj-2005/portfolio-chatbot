@@ -880,7 +880,6 @@ def scrape_webpage(url: str, timeout: int = 10) -> Tuple[str, str, bool]:
     except Exception:
         return "Error", "", False
 
-
 def process_github_links(github_urls: List[str]) -> List[Tuple[str, str]]:
     results = []
     
