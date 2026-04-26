@@ -18,7 +18,9 @@ class Settings:
     
     ROOT_DIR: Path = Path(__file__).resolve().parent.parent.parent
     
-    DOCS_DIR: str = "docs"
+    # Knowledge base directory (source of truth for RAG context).
+    # Per your updated requirement, we do NOT use `docs/` for retrieval anymore.
+    DOCS_DIR: str = os.getenv("KNOWLEDGE_BASE_DIR", "knowledge-base")
     MEMORY_FILE: Path = ROOT_DIR / "memory.json"
     
     GROQ_API_KEY: Optional[str] = os.getenv('GROQ_API_KEY')
@@ -31,6 +33,38 @@ class Settings:
     MAX_CONTEXT_SIZE: int = 6000
     MAX_RESPONSE_WORDS: int = 120
     
+    # ----------------------------
+    # Internal RAG enhancements
+    # ----------------------------
+    # IMPORTANT: Defaults preserve the current documented behavior (keyword/intent based).
+    # Set env vars to opt-in to more advanced retrieval internally without changing APIs.
+    RAG_RETRIEVAL_MODE: str = os.getenv("RAG_RETRIEVAL_MODE", "legacy").lower()
+    # legacy: existing ContextSelector logic
+    # bm25: lexical BM25 retrieval over chunked sources (resume/projects/web/search)
+    RAG_BM25_TOP_K: int = int(os.getenv("RAG_BM25_TOP_K", "8"))
+    RAG_FINAL_CONTEXT_CHUNKS: int = int(os.getenv("RAG_FINAL_CONTEXT_CHUNKS", "5"))
+    RAG_ENABLE_CONTEXT_COMPRESSION: bool = os.getenv("RAG_ENABLE_CONTEXT_COMPRESSION", "true").lower() in ("1", "true", "yes")
+
+    # Lightweight reranking (kept off by default to preserve latency/cost)
+    # overlap: deterministic token-overlap rerank (no extra API calls)
+    # llm: uses Groq to rerank (extra call) - only enable intentionally
+    RAG_RERANK_MODE: str = os.getenv("RAG_RERANK_MODE", "off").lower()
+
+    # ----------------------------
+    # Caching (instance-level, TTL)
+    # ----------------------------
+    CACHE_TTL_SECONDS_MEMORY_HIT: int = int(os.getenv("CACHE_TTL_SECONDS_MEMORY_HIT", "300"))
+    CACHE_TTL_SECONDS_RETRIEVAL: int = int(os.getenv("CACHE_TTL_SECONDS_RETRIEVAL", "300"))
+    CACHE_TTL_SECONDS_LLM: int = int(os.getenv("CACHE_TTL_SECONDS_LLM", "120"))
+    CACHE_MAX_ITEMS: int = int(os.getenv("CACHE_MAX_ITEMS", "512"))
+
+    # Normalize queries before caching/retrieval to improve hit rate.
+    CACHE_NORMALIZE_QUERIES: bool = os.getenv("CACHE_NORMALIZE_QUERIES", "true").lower() in ("1", "true", "yes")
+
+    # Serverless/runtime detection (used to avoid file persistence where unsupported)
+    IS_VERCEL: bool = os.getenv("VERCEL", "").lower() in ("1", "true", "yes") or bool(os.getenv("VERCEL_ENV"))
+    IS_SERVERLESS: bool = IS_VERCEL or bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME")) or bool(os.getenv("FUNCTIONS_WORKER_RUNTIME"))
+
     MAX_MEMORY_ENTRIES: int = 100
     SIMILARITY_THRESHOLD: float = 0.7
     EASY_QUESTION_THRESHOLD: float = 0.6

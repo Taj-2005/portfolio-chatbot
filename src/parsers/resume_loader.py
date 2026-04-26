@@ -120,6 +120,40 @@ class ResumeLoader:
         """
         self.docs_dir = Path(docs_dir) if docs_dir else settings.get_docs_path()
         logger.info(f"Initialized ResumeLoader with docs_dir: {self.docs_dir}")
+
+    def _should_index_file(self, file_path: Path) -> bool:
+        """
+        Decide whether a file under docs/ should be treated as "resume source".
+
+        Rationale:
+        - `docs/` contains both resume artifacts and project documentation.
+        - Indexing everything (e.g. `docs/ai-ml/*.md`) pollutes the resume corpus,
+          harms section extraction, and weakens grounding.
+        - We keep behavior conservative and resume-focused.
+        """
+        ext = file_path.suffix.lower()
+        if ext not in settings.SUPPORTED_RESUME_FORMATS:
+            return False
+
+        rel = file_path.relative_to(self.docs_dir)
+        rel_parts = {p.lower() for p in rel.parts}
+
+        # Explicitly skip AI/ML documentation and other non-resume assets
+        if "ai-ml" in rel_parts:
+            return False
+
+        # Skip known non-resume files in docs/
+        if file_path.name.lower() in {"projects.json", "project.json", "readme.md"}:
+            return False
+
+        # For markdown/text files, only treat as resume if it looks like one.
+        # This prevents indexing arbitrary docs as "resume".
+        if ext in {".md", ".txt"}:
+            name = file_path.name.lower()
+            if "resume" not in name and "cv" not in name:
+                return False
+
+        return True
     
     def _extract_text_from_pdf(self, file_path: Path) -> str:
         """
@@ -233,6 +267,9 @@ class ResumeLoader:
         
         for file_path in self.docs_dir.rglob('*'):
             if file_path.is_file():
+                if not self._should_index_file(file_path):
+                    continue
+
                 ext = file_path.suffix.lower()
                 handler = handlers.get(ext)
                 

@@ -35,11 +35,20 @@ class MemoryManager:
         """
         self.memory_file = memory_file or settings.MEMORY_FILE
         self.memory: List[Dict] = []
+        # Vercel/serverless often has a read-only filesystem. We automatically disable
+        # persistence when file writes are not possible to avoid noisy failures.
+        self._persistence_enabled = not settings.IS_SERVERLESS
         self._load_memory()
         logger.info(f"Initialized MemoryManager with {len(self.memory)} entries")
     
     def _load_memory(self) -> None:
         """Load memory from JSON file."""
+        if not self._persistence_enabled:
+            # In serverless, treat memory as instance-local only (warm cache).
+            self.memory = []
+            logger.info("Serverless mode: memory persistence disabled (instance-only cache)")
+            return
+
         if self.memory_file.exists():
             try:
                 with open(self.memory_file, 'r', encoding='utf-8') as f:
@@ -57,6 +66,8 @@ class MemoryManager:
     
     def _save_memory(self) -> None:
         """Save memory to JSON file."""
+        if not self._persistence_enabled:
+            return
         try:
             with open(self.memory_file, 'w', encoding='utf-8') as f:
                 json.dump(self.memory, f, indent=2, ensure_ascii=False)

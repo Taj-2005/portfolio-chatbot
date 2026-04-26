@@ -13,6 +13,12 @@ from .logger import setup_logger
 
 logger = setup_logger(__name__)
 
+_STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how", "i",
+    "in", "is", "it", "me", "my", "of", "on", "or", "tell", "that", "the", "to",
+    "what", "when", "where", "which", "who", "why", "with", "you", "your",
+}
+
 
 def clean_latex_text(text: str) -> str:
     """
@@ -60,10 +66,19 @@ def clean_latex_text(text: str) -> str:
         text = re.sub(r'[{}]', '', text)
         text = re.sub(r'\\', '', text)
         
-        # Normalize whitespace
-        text = re.sub(r'\s+', ' ', text)
-        text = re.sub(r'\s*\n\s*', '\n', text)
-        text = re.sub(r'\n{3,}', '\n\n', text)
+        # Normalize whitespace while PRESERVING line breaks.
+        # This is important for resume section extraction (headers often appear on their own lines).
+        # - First, normalize Windows line endings
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+        # - Trim trailing spaces per-line
+        text = re.sub(r"[ \t]+\n", "\n", text)
+
+        # - Collapse multiple spaces/tabs inside lines (but do not touch '\n')
+        text = re.sub(r"[ \t]{2,}", " ", text)
+
+        # - Normalize excessive blank lines
+        text = re.sub(r"\n{3,}", "\n\n", text)
         
         # Remove page numbers and other artifacts
         text = re.sub(r'Page \d+ of \d+', '', text)
@@ -171,6 +186,35 @@ def hash_text(text: str) -> str:
     except Exception as e:
         logger.error(f"Error hashing text: {e}")
         return ""
+
+
+def normalize_query(text: str) -> str:
+    """
+    Normalize a user question for caching and retrieval.
+
+    This intentionally stays lightweight (no embeddings) and improves cache hit rate
+    across punctuation/casing/whitespace variants.
+    """
+    if not text:
+        return ""
+    t = text.lower().strip()
+    t = re.sub(r"[^\w\s]", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def tokenize_for_retrieval(text: str) -> List[str]:
+    """
+    Tokenize text into normalized terms for lexical retrieval.
+
+    - Lowercases
+    - Removes stopwords
+    - Keeps alphanumeric tokens
+    """
+    if not text:
+        return []
+    tokens = re.findall(r"[a-z0-9]+", text.lower())
+    return [t for t in tokens if t and t not in _STOPWORDS and len(t) > 1]
 
 
 def truncate_text(text: str, max_length: int, suffix: str = "...") -> str:

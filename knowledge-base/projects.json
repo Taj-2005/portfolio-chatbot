@@ -1,6 +1,47 @@
 {
   "courses": [
     {
+      "id": 13,
+      "title": "ShopSmart",
+      "slug": "shopsmart",
+      "description": "Production-grade full-stack eCommerce platform with role-based admin panels, secure auth, and a clean layered architecture (Next.js + Express + Prisma).",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/shop_smart",
+      "livelink": "https://shopsmart.taj.works/",
+      "apiDocs": "https://shopsmart-server.taj.works/api-docs",
+      "image": "/shopsmart.png",
+      "tech": [
+        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
+        { "name": "Express", "icon": "/icons/expresjs.png" },
+        { "name": "Prisma", "icon": "/icons/prisma.svg" },
+        { "name": "PostgreSQL", "icon": "/icons/postgres.png" },
+        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
+        { "name": "Docker", "icon": "/icons/docker.png" }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Crediscope AI",
+      "slug": "crediscope-ai",
+      "description": "News credibility classification system combining classical NLP (TF‑IDF + ML) with an agentic LangGraph + RAG deep-analysis pipeline, deployed via Streamlit.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/news_creditability_analysis",
+      "livelink": "https://news-creditability.streamlit.app/",
+      "image": "/crediscope.png",
+      "tech": [
+        { "name": "Python", "icon": "/icons/py.png" },
+        { "name": "Streamlit", "icon": "/icons/streamlit.png" },
+        { "name": "scikit-learn", "icon": "/icons/sklearn.png" },
+        { "name": "LangGraph", "icon": "/icons/langraph.png" },
+        { "name": "FAISS", "icon": "/icons/faiss.png" },
+        { "name": "Groq", "icon": "/icons/groq.png" }
+      ]
+    },
+    {
       "id": 1,
       "title": "LinkUp",
       "slug": "linkup",

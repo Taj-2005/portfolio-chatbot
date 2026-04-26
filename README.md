@@ -155,17 +155,20 @@ agentic-ai/
 │   └── __init__.py
 ├── api/                          # Vercel serverless functions
 │   └── index.py                  # API handler (GET/POST)
-├── docs/                         # Resume & project data
-│   ├── resume.pdf                # Resume (PDF)
+├── knowledge-base/               # Knowledge base (source of truth for RAG)
 │   ├── resume.tex                # Resume (LaTeX source)
+│   ├── Resume_*.pdf              # Resume (PDF variants)
 │   ├── projects.json             # Project metadata
-│   ├── ai-ml/                    # AI/ML concepts documentation (NEW!)
-│   │   ├── overview.md
-│   │   ├── rag-explained.md
-│   │   ├── memory-system.md
-│   │   ├── llm-integration.md
-│   │   └── architecture.md
-│   └── README.md                 # Original portfolio README
+│   ├── portfolio-features.md     # Portfolio features/PRD (RAG-friendly)
+│   ├── techstacks.ts             # Tech stack constants
+│   └── README.md                 # Portfolio README (extra KB context)
+├── docs/                         # Legacy/internal docs (NOT used for RAG)
+│   ├── README.md                 # Legacy portfolio README/assets
+│   ├── projects.json             # Legacy copy (use knowledge-base/projects.json)
+│   ├── resume.tex                # Legacy copy (use knowledge-base/)
+│   ├── Resume_*.pdf              # Legacy copies (use knowledge-base/)
+│   ├── techstacks.ts             # Legacy copy (use knowledge-base/)
+│   └── ai-ml/                    # AI/ML concepts documentation
 ├── main.py                       # CLI entry point (refactored)
 ├── requirements.txt              # Python dependencies
 ├── vercel.json                   # Vercel deployment config
@@ -204,7 +207,8 @@ SEARCHAPI_API_KEY=...  # optional
 LOG_LEVEL=INFO         # optional
 ```
 
-Add resume to `docs/` (PDF/DOCX/TEX supported). Add project metadata to `docs/projects.json` if needed.
+Add resume + portfolio knowledge files to `knowledge-base/` (PDF/DOCX/TEX/MD supported).
+Add project metadata to `knowledge-base/projects.json`.
 
 Test:
 ```bash
@@ -254,7 +258,7 @@ python3 main.py "Which project uses Firebase?"
 from src.core import PortfolioChatbot
 
 chatbot = PortfolioChatbot(
-    docs_dir="docs",
+    docs_dir="knowledge-base",
     groq_api_key="gsk_...",
     searchapi_key="..."
 )
@@ -371,7 +375,7 @@ User Message:
 
 ## 🤖 AI/ML Concepts
 
-See detailed documentation in `docs/ai-ml/`:
+See internal documentation in `docs/ai-ml/` (these files are NOT used as RAG knowledge):
 - **[Overview](docs/ai-ml/overview.md)** - High-level AI/ML architecture
 - **[RAG Explained](docs/ai-ml/rag-explained.md)** - How RAG works
 - **[Memory System](docs/ai-ml/memory-system.md)** - Learning memory details
@@ -405,7 +409,7 @@ Auto-deploys on push. `vercel.json` configures routing.
 
 ## Documentation
 
-Technical documentation in `docs/ai-ml/`:
+Technical documentation in `docs/ai-ml/` (NOT used as RAG knowledge):
 - `overview.md` - System architecture and AI/ML components
 - `rag-explained.md` - Retrieval-augmented generation pipeline
 - `memory-system.md` - Jaccard similarity and cache management
@@ -422,7 +426,7 @@ Technical documentation in `docs/ai-ml/`:
 
 **Debug:** `LOG_LEVEL=DEBUG python3 main.py "test"`
 
-**Resume not loading:** Check `docs/` has PDF/DOCX/TEX files
+**Resume not loading:** Check `knowledge-base/` has PDF/DOCX/TEX files
 
 **Vercel deploy:** Verify environment variables in dashboard
 

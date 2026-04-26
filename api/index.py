@@ -48,8 +48,8 @@ def _get_chatbot():
         
         searchapi_key = os.environ.get("SEARCHAPI_API_KEY") or os.environ.get("SEARCHAPI_KEY")
         
-        # Initialize chatbot with docs directory
-        docs_dir = str(_root / "docs")
+        # Initialize chatbot with knowledge base directory (source of truth)
+        docs_dir = str(_root / "knowledge-base")
         _chatbot_instance = PortfolioChatbot(
             docs_dir=docs_dir,
             groq_api_key=groq_key,

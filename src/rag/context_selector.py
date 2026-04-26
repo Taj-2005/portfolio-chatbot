@@ -11,6 +11,7 @@ from typing import Dict, List, Tuple, Optional
 from ..config import settings
 from ..utils.logger import setup_logger
 from .question_classifier import QuestionClassifier
+from .bm25_retriever import BM25Retriever, build_chunks_from_sources
 
 logger = setup_logger(__name__)
 
@@ -262,6 +263,17 @@ class ContextSelector:
                 "Respond in second person that you do not have LinkUp details in your materials, "
                 "and do not mention other projects."
             )
+
+        # 1.5) Optional BM25 retrieval (opt-in)
+        # This stays purely lexical (no embeddings/vector DB) to align with project docs by default.
+        if settings.RAG_RETRIEVAL_MODE == "bm25":
+            return self._build_bm25_context(
+                sections=sections,
+                web_content=web_content,
+                question=question,
+                searchapi_content=searchapi_content,
+                project_data=project_data,
+            )
         
         # 2) Keyword-based context
         keyword = self.classifier.extract_keyword_from_question(question)
@@ -277,6 +289,112 @@ class ContextSelector:
             sections, web_content, question, searchapi_content,
             full_resume, project_data, intent
         )
+
+    def _compress_for_question(self, text: str, question: str, max_chars: int) -> str:
+        """
+        Context compression for small corpora.
+
+        Keeps sentences that contain query terms to reduce noise and hallucinations
+        while preserving factual grounding. This is intentionally simple and fast.
+        """
+        if not text:
+            return ""
+        if len(text) <= max_chars:
+            return text
+
+        q_terms = set(re.findall(r"[a-z0-9]+", question.lower()))
+        # Split on sentence-ish boundaries
+        sentences = re.split(r"(?<=[\.\!\?])\s+|\n{2,}", text)
+        kept = []
+        for s in sentences:
+            st = s.strip()
+            if not st:
+                continue
+            st_terms = set(re.findall(r"[a-z0-9]+", st.lower()))
+            if q_terms & st_terms:
+                kept.append(st)
+            if sum(len(x) for x in kept) >= max_chars:
+                break
+
+        # Fallback: just truncate if nothing matched
+        if not kept:
+            return text[:max_chars] + "..."
+
+        joined = "\n".join(kept)
+        return joined[:max_chars] + ("..." if len(joined) > max_chars else "")
+
+    def _build_bm25_context(
+        self,
+        sections: Dict[str, str],
+        web_content: List[Tuple[str, str]],
+        question: str,
+        searchapi_content: Optional[str],
+        project_data: Optional[Dict],
+    ) -> str:
+        """
+        Build context via BM25 top-k chunks over all sources.
+
+        This improves recall over simple keyword matching while keeping behavior
+        explainable and aligned with the project's "no embeddings by default" docs.
+        """
+        chunks = build_chunks_from_sources(
+            sections=sections,
+            project_data=project_data,
+            web_content=web_content,
+            searchapi_content=searchapi_content,
+        )
+        if not chunks:
+            return ""
+
+        retriever = BM25Retriever(chunks)
+        top = retriever.top_k(question, k=settings.RAG_BM25_TOP_K)
+        if not top:
+            # If BM25 found nothing, fall back to the legacy general context.
+            return self._build_general_context(
+                sections=sections,
+                web_content=web_content,
+                question=question,
+                searchapi_content=searchapi_content,
+                full_resume="",
+                project_data=project_data,
+                intent="general",
+            )
+
+        # Deterministic rerank option (no extra calls)
+        ranked_chunks = [c for (c, _s) in top]
+        if settings.RAG_RERANK_MODE == "overlap":
+            q_terms = set(re.findall(r"[a-z0-9]+", question.lower()))
+
+            def overlap_score(txt: str) -> int:
+                return len(q_terms & set(re.findall(r"[a-z0-9]+", (txt or "").lower())))
+
+            ranked_chunks = sorted(ranked_chunks, key=lambda c: overlap_score(c.text), reverse=True)
+
+        context_parts = []
+        current_length = 0
+        max_chunks = max(1, settings.RAG_FINAL_CONTEXT_CHUNKS)
+
+        for chunk in ranked_chunks[:max_chunks]:
+            remaining = self.max_context_size - current_length
+            if remaining <= 200:
+                break
+
+            text = chunk.text
+            # Compression is opt-in and capped per-chunk to keep diversity.
+            if settings.RAG_ENABLE_CONTEXT_COMPRESSION:
+                text = self._compress_for_question(text, question, max_chars=min(1200, remaining - 80))
+            else:
+                text = text[: min(len(text), remaining - 80)]
+
+            formatted = f"--- {chunk.source} ---\n{text}\n"
+            if current_length + len(formatted) > self.max_context_size:
+                formatted = formatted[: max(0, remaining)]  # last-ditch cap
+            context_parts.append(formatted)
+            current_length += len(formatted)
+
+        result = "\n".join(context_parts).strip()
+        logger.info(f"Built BM25 context: {len(result)} chars, chunks={len(context_parts)}")
+        return result
     
     def _build_general_context(
         self,
