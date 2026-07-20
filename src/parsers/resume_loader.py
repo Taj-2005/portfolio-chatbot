@@ -51,33 +51,56 @@ def extract_resume_sections(text: str) -> Dict[str, str]:
     
     # Regex patterns to identify section headers
     patterns = {
-        'EXPERIENCE': r'(?i)(professional\s+)?experience|work\s+history|employment',
+        'EXPERIENCE': r'(?i)(professional\s+)?experience|work\s+history|employment|internships?',
         'PROJECTS': r'(?i)projects?|portfolio',
         'SKILLS': r'(?i)(technical\s+)?skills?|technologies|expertise',
         'EDUCATION': r'(?i)education|academic|qualifications',
         'SUMMARY': r'(?i)summary|about|profile|objective',
     }
-    
+
+    def heading_text(line: str) -> Optional[str]:
+        """
+        Return the heading label if this line is a section heading, else None.
+
+        Recognises Markdown headings (`## EXPERIENCE`) and the short all-caps
+        headings used by PDF/LaTeX resumes. Requiring a heading shape first stops
+        ordinary bullets that happen to contain "projects" from splitting sections.
+        """
+        stripped = line.strip()
+        if not stripped:
+            return None
+
+        if stripped.startswith('#'):
+            return stripped.lstrip('#').strip().strip('*_: ')
+
+        letters = [c for c in stripped if c.isalpha()]
+        if letters and len(stripped) < 50 and all(c.isupper() for c in letters):
+            return stripped.strip('*_: ')
+
+        return None
+
     try:
         lines = text.split('\n')
         current_section = 'OTHER'
         section_content = []
-        
+
         for line in lines:
             line_stripped = line.strip()
             is_header = False
-            
+            heading = heading_text(line)
+
             # Check if line is a section header
-            for section_name, pattern in patterns.items():
-                if re.match(pattern, line_stripped) and len(line_stripped) < 50:
-                    # Save previous section content
-                    if section_content:
-                        sections[current_section] += '\n'.join(section_content) + '\n\n'
-                    current_section = section_name
-                    section_content = []
-                    is_header = True
-                    break
-            
+            if heading:
+                for section_name, pattern in patterns.items():
+                    if re.search(pattern, heading):
+                        # Save previous section content
+                        if section_content:
+                            sections[current_section] += '\n'.join(section_content) + '\n\n'
+                        current_section = section_name
+                        section_content = []
+                        is_header = True
+                        break
+
             # Add line to current section
             if not is_header and line_stripped:
                 section_content.append(line)
@@ -261,30 +284,41 @@ class ResumeLoader:
         
         resume_parts = []
         all_links = set()
-        
-        logger.info("Loading resume files...")
-        print("📄 Loading resume...\n")
-        
-        for file_path in self.docs_dir.rglob('*'):
-            if file_path.is_file():
-                if not self._should_index_file(file_path):
-                    continue
 
-                ext = file_path.suffix.lower()
-                handler = handlers.get(ext)
-                
-                if handler:
-                    try:
-                        content = handler(file_path)
-                        if content and not content.startswith('[Error'):
-                            resume_parts.append(content)
-                            links = extract_all_links(content)
-                            all_links.update(links)
-                            print(f"✓ {file_path.name} ({len(content)} chars, {len(links)} links)")
-                            logger.info(f"Loaded {file_path.name}: {len(content)} chars, {len(links)} links")
-                    except Exception as e:
-                        print(f"✗ Error: {file_path.name}: {e}")
-                        logger.error(f"Error loading {file_path.name}: {e}")
+        logger.info("Loading resume files...")
+
+        candidates = [
+            p for p in sorted(self.docs_dir.rglob('*'))
+            if p.is_file() and self._should_index_file(p)
+        ]
+
+        # The knowledge base ships the resume as both Markdown and PDF. Indexing both
+        # duplicates every bullet, which skews retrieval — prefer the Markdown copy,
+        # since its headings drive section extraction far more reliably than PDF text.
+        binary_exts = {'.pdf', '.docx', '.doc', '.tex'}
+        if any(p.suffix.lower() in {'.md', '.txt'} for p in candidates):
+            kept = []
+            for p in candidates:
+                if p.suffix.lower() in binary_exts:
+                    logger.info(f"Skipping {p.name}: superseded by the Markdown resume")
+                else:
+                    kept.append(p)
+            candidates = kept
+
+        for file_path in candidates:
+            handler = handlers.get(file_path.suffix.lower())
+            if not handler:
+                continue
+
+            try:
+                content = handler(file_path)
+                if content and not content.startswith('[Error'):
+                    resume_parts.append(content)
+                    links = extract_all_links(content)
+                    all_links.update(links)
+                    logger.info(f"Loaded {file_path.name}: {len(content)} chars, {len(links)} links")
+            except Exception as e:
+                logger.error(f"Error loading {file_path.name}: {e}")
         
         # Combine all resume content
         full_resume = "\n\n".join(resume_parts)

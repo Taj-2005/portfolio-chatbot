@@ -34,6 +34,10 @@ class KnowledgeBaseLoader:
     - `knowledge-base/projects.json` (also parsed by ProjectLoader)
     """
 
+    # Budget for the concatenated fallback text (merged into the resume's OTHER section).
+    MAX_CHARS_PER_SOURCE = 4000
+    MAX_TOTAL_CHARS = 12000
+
     def __init__(self, kb_dir: str | None = None):
         self.kb_dir = Path(kb_dir) if kb_dir else settings.get_docs_path()
         logger.info(f"Initialized KnowledgeBaseLoader with kb_dir: {self.kb_dir}")
@@ -88,7 +92,10 @@ class KnowledgeBaseLoader:
             name_lower = file_path.name.lower()
 
             # Skip resume artifacts (handled by ResumeLoader) to avoid duplication.
-            if ext in {".pdf", ".tex", ".docx", ".doc"} and ("resume" in name_lower or name_lower == "resume.tex"):
+            # Markdown counts too: RESUME.md is the primary resume source now.
+            if ext in {".pdf", ".tex", ".docx", ".doc", ".md", ".txt"} and (
+                "resume" in name_lower or "cv" in name_lower
+            ):
                 continue
 
             # Skip projects.json raw (handled by ProjectLoader into structured text_for_rag).
@@ -121,13 +128,21 @@ class KnowledgeBaseLoader:
             named_sources[source_name] = text
             links.update(extract_all_links(text))
 
-        # Concatenate (bounded) for legacy fallback
+        # Concatenate (bounded) for legacy fallback.
+        # Order matters: the combined text is truncated to a fixed budget, so the most
+        # answer-dense source (profile: identity, current roles, canonical links) must come
+        # first. Alphabetical order used to let portfolio-features.md consume the whole
+        # budget and push profile.md out entirely.
+        priority = {"KB_PROFILE": 0, "KB_TECHSTACKS": 1}
+        ordered = sorted(named_sources.items(), key=lambda kv: (priority.get(kv[0], 2), kv[0]))
+
         pieces = []
-        for k, v in named_sources.items():
-            pieces.append(f"--- {k} ---\n{v}")
+        for k, v in ordered:
+            # Cap any single source so one long document cannot starve the rest.
+            pieces.append(f"--- {k} ---\n{v[:self.MAX_CHARS_PER_SOURCE]}")
         full_text = "\n\n".join(pieces)
         # Keep it bounded so it doesn't dominate OTHER.
-        full_text = full_text[:12000]
+        full_text = full_text[:self.MAX_TOTAL_CHARS]
 
         logger.info(f"Loaded knowledge-base sources: {len(named_sources)} files, {len(links)} links")
         return full_text, links, named_sources

@@ -69,7 +69,7 @@ Memory Check (Jaccard) → Cache Hit? → Return
     ↓
 Resume Parser (PDF/DOCX/TEX) → Sections + Links
     ↓
-Intent Classifier → linkup_only | keyword | general
+Intent Classifier → featured_only | keyword | general
     ↓
 Context Selector (RAG) → 6000-char window
     ├─ Resume sections (priority 1)
@@ -307,15 +307,15 @@ CORS enabled for all origins.
 **1. Question Classification**
 - Regex-based pattern matching for intent detection
 - Categories: project, skills, experience, education, general
-- Special handling for LinkUp ("main project", "most recent")
+- Special handling for the featured project ("main project", "most recent")
 
 **2. Context Selection**
 The system uses a **3-tier intent system**:
 
 | Intent | Trigger | Context Strategy |
 |--------|---------|------------------|
-| `linkup_only` | "explain your project", "main project" | Only LinkUp content |
-| `explicit_linkup` | "tell me about LinkUp" | LinkUp-focused |
+| `featured_only` | "explain your project", "main project" | Only the featured project content |
+| `explicit_featured` | "tell me about deplo.ai" | featured-project-focused |
 | `keyword` | "which project uses Firebase?" | Keyword-based search |
 | `general` | Default | Multi-section RAG |
 
@@ -346,7 +346,7 @@ def similarity(q1, q2):
 - Complex questions: 0.7 (stricter matching)
 
 **Cache Invalidation:**
-- Project questions: Validate that cached answer mentions LinkUp
+- Project questions: Validate that cached answer mentions the featured project
 - General questions: Validate similarity > 0.75 and answer length > 5 words
 
 ### LLM Integration

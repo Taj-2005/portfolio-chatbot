@@ -126,9 +126,9 @@ system_prompt = """You ARE the person whose resume this is. You speak in second 
 CRITICAL RULES:
 - Always use "I": "I built", "I worked on", "I focused on", "I used".
 - NEVER use "you", "the candidate", "the developer", "they built", "he/she worked".
-- If asked about projects, answer only about the project(s) in the context (e.g. LinkUp when that is provided). Do not mix or invent projects.
+- If asked about projects, answer only about the project(s) in the context (e.g. the featured project when that is provided). Do not mix or invent projects.
 - Use the provided context (resume, project.json, GitHub). Only say "Not found" if there is truly no relevant information.
-- For "explain your project" or "most recent project" or "LinkUp": answer ONLY about LinkUp using the context given.
+- For "explain your project" or "most recent project" or the featured project by name: answer ONLY about that project using the context given.
 
 Response style:
 - second person, confident, professional
@@ -170,8 +170,8 @@ CONTEXT:
 --- RESUME_SKILLS ---
 Python, JavaScript, React, Next.js, MongoDB, Firebase, AWS, Tailwind CSS
 
---- PROJECT (LinkUp) ---
-LinkUp | A social platform using Next.js, MongoDB, TypeScript, Socket.IO, AWS
+--- PROJECT (deplo.ai) ---
+deplo.ai | AI-powered deployment orchestration platform | Tech: Next.js, TypeScript, Python, AWS, Docker
 
 QUESTION: What are your technical skills?
 
@@ -217,11 +217,11 @@ response = client.chat.completions.create(
 
 | Temperature | Behavior | Example |
 |-------------|----------|---------|
-| **0.0** | Deterministic (always same output) | "I built LinkUp" (exact same every time) |
-| **0.2** ✅ | Mostly consistent, slight variation | "I built LinkUp" or "I developed LinkUp" |
-| **0.5** | Balanced creativity | "I created LinkUp, an innovative social platform" |
-| **1.0** | Creative, varied | "I pioneered a revolutionary networking solution called LinkUp" |
-| **2.0** | Chaotic, unpredictable | "LinkUp emerged from my vision of quantum social graphs" |
+| **0.0** | Deterministic (always same output) | "I built deplo.ai" (exact same every time) |
+| **0.2** ✅ | Mostly consistent, slight variation | "I built deplo.ai" or "I developed deplo.ai" |
+| **0.5** | Balanced creativity | "I created deplo.ai, an innovative deployment platform" |
+| **1.0** | Creative, varied | "I pioneered a revolutionary deployment solution called deplo.ai" |
+| **2.0** | Chaotic, unpredictable | "deplo.ai emerged from my vision of self-healing infrastructure" |
 
 **For portfolios:** 0.2 is perfect (factual but not robotic).
 
@@ -269,8 +269,8 @@ def enforce_second_person_voice(response):
 
 **Example:**
 ```
-Before: "You worked on LinkUp using Next.js and MongoDB."
-After:  "I worked on LinkUp using Next.js and MongoDB."
+Before: "You worked on deplo.ai using Next.js and Python."
+After:  "I worked on deplo.ai using Next.js and Python."
 ```
 
 #### Step 2: Truncate to Word Limit
@@ -431,7 +431,7 @@ Q: What are your skills?
 A: I have expertise in Python, JavaScript, and React.
 
 Q: Tell me about your project.
-A: I built LinkUp, a social platform using Next.js and MongoDB.
+A: I built deplo.ai, a deployment orchestration platform using Next.js and Python.
 ```
 
 **Why:** Examples teach the model the desired format.
@@ -464,7 +464,7 @@ System: Answer questions. Rules:
 ```python
 # Test 1: Voice enforcement
 question = "What's your main project?"
-context = "LinkUp - A social platform..."
+context = "deplo.ai - AI-powered deployment orchestration..."
 response = llm.generate(question, context)
 assert "I built" in response or "I developed" in response
 
@@ -474,9 +474,9 @@ word_count = len(response.split())
 assert word_count <= 140  # 120 + buffer
 
 # Test 3: Context grounding
-response = llm.generate("What's your main project?", "MealLogger - A food app...")
-assert "MealLogger" in response
-assert "LinkUp" not in response  # Should not hallucinate
+response = llm.generate("What's your main project?", "deplo.ai - deployment orchestration...")
+assert "deplo.ai" in response
+assert "ShopSmart" not in response  # Should not pull in an unrelated project
 ```
 
 ### Debug Logging

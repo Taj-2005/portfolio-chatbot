@@ -1,6 +1,48 @@
 {
   "courses": [
     {
+      "id": 22,
+      "title": "deplo.ai",
+      "slug": "deplo-ai",
+      "description": "AI-powered deployment orchestration platform that simplifies cloud deployments for developers — intelligent infrastructure orchestration, GitHub integrations, environment management, and seamless rollouts across modern cloud platforms.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "livelink": "https://www.deplo.in",
+      "linkedin": "https://www.linkedin.com/company/deplo-ai",
+      "image": "/deplo-ai.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Python",
+          "icon": "/icons/py.png"
+        },
+        {
+          "name": "AWS",
+          "icon": "/icons/aws.png"
+        },
+        {
+          "name": "Docker",
+          "icon": "/icons/docker.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
       "id": 13,
       "title": "ShopSmart",
       "slug": "shopsmart",
@@ -13,12 +55,38 @@
       "apiDocs": "https://shopsmart-server.taj.works/api-docs",
       "image": "/shopsmart.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Express", "icon": "/icons/expresjs.png" },
-        { "name": "Prisma", "icon": "/icons/prisma.svg" },
-        { "name": "PostgreSQL", "icon": "/icons/postgres.png" },
-        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
-        { "name": "Docker", "icon": "/icons/docker.png" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Express",
+          "icon": "/icons/expresjs.png"
+        },
+        {
+          "name": "Prisma",
+          "icon": "/icons/prisma.png"
+        },
+        {
+          "name": "PostgreSQL",
+          "icon": "/icons/postgres.png"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Docker",
+          "icon": "/icons/docker.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -33,50 +101,194 @@
       "livelink": "https://news-creditability.streamlit.app/",
       "image": "/crediscope.png",
       "tech": [
-        { "name": "Python", "icon": "/icons/py.png" },
-        { "name": "Streamlit", "icon": "/icons/streamlit.png" },
-        { "name": "scikit-learn", "icon": "/icons/sklearn.png" },
-        { "name": "LangGraph", "icon": "/icons/langraph.png" },
-        { "name": "FAISS", "icon": "/icons/faiss.png" },
-        { "name": "Groq", "icon": "/icons/groq.png" }
+        {
+          "name": "Python",
+          "icon": "/icons/py.png"
+        },
+        {
+          "name": "Streamlit",
+          "icon": "/icons/streamlit.png"
+        },
+        {
+          "name": "scikit-learn",
+          "icon": "/icons/sklearn.png"
+        },
+        {
+          "name": "LangGraph",
+          "icon": "/icons/langraph.png"
+        },
+        {
+          "name": "FAISS",
+          "icon": "/icons/faiss.png"
+        },
+        {
+          "name": "Chroma",
+          "icon": "/icons/chroma.png"
+        },
+        {
+          "name": "Groq",
+          "icon": "/icons/groq.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
-      "id": 1,
-      "title": "LinkUp",
-      "slug": "linkup",
-      "description": "A modern social platform built to help people connect instantly, share meaningful links, and express themselves through rich, customizable profiles.",
-      "price": 149.99,
-      "instructor": "self",
+      "id": 17,
+      "title": "Portfolio Chatbot",
+      "slug": "portfolio-chatbot",
+      "description": "RAG-style portfolio assistant: answers questions about projects, experience, and skills — Python backend, retrieval + LLM pipeline, deployed alongside the live portfolio at www.taju.dev.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/portfolio-chatbot",
+      "livelink": "https://www.taju.dev",
+      "image": "/portfolioChatbot.png",
+      "tech": [
+        {
+          "name": "Python",
+          "icon": "/icons/py.png"
+        },
+        {
+          "name": "LangGraph",
+          "icon": "/icons/langraph.png"
+        },
+        {
+          "name": "Groq",
+          "icon": "/icons/groq.png"
+        },
+        {
+          "name": "FAISS",
+          "icon": "/icons/faiss.png"
+        },
+        {
+          "name": "Vercel",
+          "icon": "/icons/vercel.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "WildChat Analytics",
+      "slug": "wildchat-analytics",
+      "description": "Analytics on 50,000+ AI chat records — toxicity patterns, prompt risk categories, and moderation insights — delivered as a Tableau executive dashboard with supporting data prep and group project codebase.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/SectionA_Group6_WildChat",
+      "livelink": "https://public.tableau.com/app/profile/shaik.tajuddin/viz/WildChat_Analytics_Platform/ExecutiveSummary",
+      "image": "/wildchatt.png",
+      "tech": [
+        {
+          "name": "Tableau",
+          "icon": "/icons/tableau-software.svg"
+        },
+        {
+          "name": "Python",
+          "icon": "/icons/py.png"
+        },
+        {
+          "name": "Pandas",
+          "icon": "/icons/pandas.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "NextFlow",
+      "slug": "nextflow",
+      "description": "Krea.ai–style creative AI suite clone: marketing landing, feature sections, and workflow-style UI — an LLM workflow builder experience deployed on Vercel.",
+      "price": 0,
+      "instructor": "Self",
       "isFeatured": true,
       "github": null,
-      "livelink": "https://link-up-web.vercel.app/",
-      "image": "/linkup.png",
+      "livelink": "https://next-floww.vercel.app/",
+      "demoLink": "https://youtu.be/y6THx6_Cefg?si=fHjdKWjMaGdbO0nr",
+      "image": "/nextflow.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
-        { "name": "Socket.IO", "icon": "/icons/sockets.png" },
-        { "name": "AWS", "icon": "/icons/aws.png" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Framer Motion",
+          "icon": "/framer-min.png"
+        },
+        {
+          "name": "Vercel",
+          "icon": "/icons/vercel.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
-      "id": 4,
-      "title": "AlgoJourney",
-      "slug": "algojourney",
-      "description": "Algo Journey is a web-based tracker for organizing and tracking LeetCode problems topic-wise, helping users systematically improve their problem-solving skills.",
-      "price": 99.99,
-      "instructor": "self",
+      "id": 15,
+      "title": "Data & BI Portfolio",
+      "slug": "data-analyst-portfolio",
+      "description": "Data Analyst and BI portfolio: pipelines, dashboards, KPI design, and storytelling — engineering data from intuition to insight (Tableau, Python, AWS, cloud analytics).",
+      "price": 0,
+      "instructor": "Self",
       "isFeatured": true,
-      "github": "https://github.com/Taj-2005/algoJourney_v1",
-      "livelink": "https://algojourney-dsa-nst.vercel.app/",
-      "image": "/algojourney.png",
+      "livelink": "https://taj-2005.github.io/Portfolio_Data_Analyst/",
+      "image": "/dva_portfolio.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "Firebase", "icon": "/icons/firebase.svg" },
-        { "name": "JavaScript", "icon": "/icons/js.svg" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "Figma",
+          "icon": "/icons/figmadark.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -91,11 +303,189 @@
       "isFeatured": true,
       "image": "/treadly.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "JavaScript", "icon": "/icons/js.svg" },
-        { "name": "Gemini AI", "icon": "/icons/gemini.svg" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "MongoDB",
+          "icon": "/icons/mongodb.png"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "JavaScript",
+          "icon": "/icons/js.svg"
+        },
+        {
+          "name": "Gemini AI",
+          "icon": "/icons/gemini.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "UX Audit Tool",
+      "slug": "ux-audit-tool",
+      "description": "AI-powered and rule-based UX auditing tool for landing pages.",
+      "price": 149.99,
+      "instructor": "Self",
+      "github": "https://github.com/Taj-2005/ux-audit-app",
+      "livelink": "https://ux-audit-app.vercel.app/",
+      "image": "/ux-audit-tool.jpg",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Gemini AI",
+          "icon": "/icons/gemini.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "title": "LinkUp",
+      "slug": "linkup",
+      "description": "A modern social platform built to help people connect instantly, share meaningful links, and express themselves through rich, customizable profiles.",
+      "price": 149.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/LinkUp",
+      "livelink": "https://link-up-web.vercel.app/",
+      "image": "/linkup.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "MongoDB",
+          "icon": "/icons/mongodb.png"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Socket.IO",
+          "icon": "/icons/sockets.png"
+        },
+        {
+          "name": "AWS",
+          "icon": "/icons/aws.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "AlgoJourney",
+      "slug": "algojourney",
+      "description": "Algo Journey is a web-based tracker for organizing and tracking LeetCode problems topic-wise, helping users systematically improve their problem-solving skills.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/algoJourney_v1",
+      "livelink": "https://algojourney-dsa-nst.vercel.app/",
+      "image": "/algojourney.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "Firebase",
+          "icon": "/icons/firebase.svg"
+        },
+        {
+          "name": "JavaScript",
+          "icon": "/icons/js.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Melo",
+      "slug": "melo",
+      "description": "Photo-based meal tracking for Android — capture meals, timeline history, smart reminders, streaks, and cloud sync; marketing site and APK download on Vercel.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/Melo",
+      "livelink": "https://meloapp.vercel.app/",
+      "image": "/melo.png",
+      "tech": [
+        {
+          "name": "React Native",
+          "icon": "/icons/native.svg"
+        },
+        {
+          "name": "Expo",
+          "icon": "/icons/expo.png"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Firebase",
+          "icon": "/Firebase-min.png"
+        },
+        {
+          "name": "Vercel",
+          "icon": "/icons/vercel.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -109,9 +499,144 @@
       "livelink": "https://fste-hackathon-group47.vercel.app/",
       "image": "/fste.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "Shadcn UI", "icon": "/icons/shadcn.png" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "Shadcn UI",
+          "icon": "/icons/shadcn.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "PricePulse",
+      "slug": "pricepulse",
+      "description": "PricePulse tracks Amazon product prices, visualizes trends, and sends email alerts when prices drop below a target threshold.",
+      "price": 99.99,
+      "instructor": "self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/PricePulse",
+      "livelink": "https://amazon-pricepulse.vercel.app",
+      "image": "/pricepulse.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "MongoDB",
+          "icon": "/icons/mongodb.png"
+        },
+        {
+          "name": "Nodemailer",
+          "icon": "/icons/nodemailer.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "title": "KracICE",
+      "slug": "kracice",
+      "description": "Freelance client prototype: AI-powered exam-prep marketing site for India (JEE, NEET, UPSC) — hero, feature sections, personality modes, and CTAs; demonstrates product vision before full backend integration.",
+      "price": 0,
+      "instructor": "Freelance",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/KracICE",
+      "livelink": "https://krac-ice.vercel.app/",
+      "image": "/kracice.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "JavaScript",
+          "icon": "/icons/js.svg"
+        },
+        {
+          "name": "Vercel",
+          "icon": "/icons/vercel.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Chillz",
+      "slug": "chillz",
+      "description": "Ice cream brand landing page — bold gradient layout, flavor navigation, and interactive product showcase; UI prototyped in Figma, built with Next.js and Tailwind, deployed on Vercel.",
+      "price": 0,
+      "instructor": "Self",
+      "isFeatured": true,
+      "github": "https://github.com/Taj-2005/IceCream",
+      "livelink": "https://ice-cream-ashy.vercel.app/",
+      "image": "/chillz.png",
+      "tech": [
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Figma",
+          "icon": "/icons/figmadark.png"
+        },
+        {
+          "name": "Vercel",
+          "icon": "/icons/vercel.png"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -126,23 +651,22 @@
       "livelink": "https://dine-restaurant6.vercel.app/",
       "image": "/restaurant.jpeg",
       "tech": [
-        { "name": "HTML", "icon": "/icons/html.svg" },
-        { "name": "CSS", "icon": "/icons/css.svg" }
-      ]
-    },
-    {
-      "id": 9,
-      "title": "UX Audit Tool",
-      "slug": "ux-audit-tool",
-      "description": "AI-powered and rule-based UX auditing tool for landing pages.",
-      "price": 149.99,
-      "instructor": "Self",
-      "github": "https://github.com/Taj-2005/ux-audit-app",
-      "livelink": "https://ux-audit-app.vercel.app/",
-      "image": "/ux-audit-tool.jpg",
-      "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Gemini AI", "icon": "/icons/gemini.svg" }
+        {
+          "name": "HTML",
+          "icon": "/icons/html.svg"
+        },
+        {
+          "name": "CSS",
+          "icon": "/icons/css.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -157,9 +681,26 @@
       "livelink": "https://shaik-tajuddin.vercel.app/",
       "image": "/portfoli.jpeg",
       "tech": [
-        { "name": "HTML", "icon": "/icons/html.svg" },
-        { "name": "CSS", "icon": "/icons/css.svg" },
-        { "name": "JavaScript", "icon": "/icons/js.svg" }
+        {
+          "name": "HTML",
+          "icon": "/icons/html.svg"
+        },
+        {
+          "name": "CSS",
+          "icon": "/icons/css.svg"
+        },
+        {
+          "name": "JavaScript",
+          "icon": "/icons/js.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -173,8 +714,22 @@
       "livelink": "https://heuristical-analysis-railweb.vercel.app/",
       "image": "/railweb.png",
       "tech": [
-        { "name": "HTML", "icon": "/icons/html.svg" },
-        { "name": "CSS", "icon": "/icons/css.svg" }
+        {
+          "name": "HTML",
+          "icon": "/icons/html.svg"
+        },
+        {
+          "name": "CSS",
+          "icon": "/icons/css.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -185,11 +740,25 @@
       "price": 149.99,
       "instructor": "Self",
       "github": "https://github.com/Taj-2005/BlinkTacToe",
-      "livelink": "https://blink-tac-toe-bice.vercel.app/",
+      "livelink": "https://blink-tac-toe-taj.vercel.app/",
       "image": "/blinktactoe.jpeg",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     },
     {
@@ -203,9 +772,26 @@
       "livelink": "https://tic-tac-toe-taj.vercel.app/",
       "image": "/xo.jpeg",
       "tech": [
-        { "name": "HTML", "icon": "/icons/html.svg" },
-        { "name": "CSS", "icon": "/icons/css.svg" },
-        { "name": "JavaScript", "icon": "/icons/js.svg" }
+        {
+          "name": "HTML",
+          "icon": "/icons/html.svg"
+        },
+        {
+          "name": "CSS",
+          "icon": "/icons/css.svg"
+        },
+        {
+          "name": "JavaScript",
+          "icon": "/icons/js.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     }
   ],
@@ -222,28 +808,26 @@
       "livelink": "https://shaik-tajuddin-portfolio.vercel.app/",
       "image": "/portfolio.png",
       "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "TypeScript", "icon": "/icons/typescript.svg" },
-        { "name": "Github", "icon": "/icons/githubl.svg" }
-      ]
-    },
-    {
-      "id": 5,
-      "title": "PricePulse",
-      "slug": "pricepulse",
-      "description": "PricePulse tracks Amazon product prices, visualizes trends, and sends email alerts when prices drop below a target threshold.",
-      "price": 99.99,
-      "instructor": "self",
-      "isFeatured": true,
-      "github": "https://github.com/Taj-2005/PricePulse",
-      "livelink": "https://amazon-pricepulse.vercel.app",
-      "image": "/pricepulse.png",
-      "tech": [
-        { "name": "Next.js", "icon": "/icons/nextjslogo.svg" },
-        { "name": "Tailwind", "icon": "/icons/tailwindcss.svg" },
-        { "name": "MongoDB", "icon": "/icons/mongodb.png" },
-        { "name": "Nodemailer", "icon": "/icons/nodemailer.png" }
+        {
+          "name": "Next.js",
+          "icon": "/icons/nextjslogo.svg"
+        },
+        {
+          "name": "Tailwind",
+          "icon": "/icons/tailwindcss.svg"
+        },
+        {
+          "name": "TypeScript",
+          "icon": "/icons/typescript.svg"
+        },
+        {
+          "name": "Git",
+          "icon": "/icons/git.png"
+        },
+        {
+          "name": "GitHub",
+          "icon": "/icons/githubl.svg"
+        }
       ]
     }
   ]

@@ -51,7 +51,7 @@ LLM: "I have expertise in Python, JavaScript, React, Next.js, MongoDB..."
 #### Step 1: Question Classification
 ```python
 intent = detect_project_intent(question)
-# Result: intent = "linkup_only" (asking for main project)
+# Result: intent = "featured_only" (asking for main project)
 
 sections = classify_sections(question)
 # Result: sections = ["PROJECTS"]
@@ -61,40 +61,40 @@ sections = classify_sections(question)
 ```python
 # A. Load resume sections
 sections = {
-    "PROJECTS": "LinkUp - A social platform...\nAlgoJourney - A DSA tracker...",
+    "PROJECTS": "deplo.ai - AI-powered deployment orchestration...\nShopSmart - Production e-commerce platform...",
     "SKILLS": "Python, JavaScript, React, Next.js...",
     "EXPERIENCE": "Software Developer at ..."
 }
 
 # B. Load project JSON
 project_data = {
-    "linkup": {
-        "title": "LinkUp",
-        "description": "A modern social platform...",
-        "tech": ["Next.js", "MongoDB", "TypeScript", ...]
+    "featured": {
+        "title": "deplo.ai",
+        "description": "AI-powered deployment orchestration platform...",
+        "tech": ["Next.js", "TypeScript", "Python", ...]
     }
 }
 
-# C. Extract LinkUp ONLY (intent = linkup_only)
-linkup_from_resume = extract_linkup_block(sections["PROJECTS"])
-# Result: "LinkUp - A social platform using Next.js, MongoDB..."
+# C. Extract the featured project ONLY (intent = featured_only)
+featured_from_resume = extract_featured_block(sections["PROJECTS"])
+# Result: "deplo.ai — AI-powered deployment orchestration platform..."
 
-linkup_from_json = project_data["linkup_text"]
-# Result: "LinkUp | A modern social platform... | Tech: Next.js, MongoDB, ..."
+featured_from_json = project_data["featured_text"]
+# Result: "deplo.ai | AI-powered deployment orchestration... | Tech: Next.js, TypeScript, ..."
 ```
 
 #### Step 3: Context Assembly
 ```python
 context = """
---- PROJECT (project.json - LinkUp) ---
-LinkUp | A modern social platform built to help people connect instantly,
-share meaningful links, and express themselves through rich, customizable
-profiles. | Tech: Next.js, MongoDB, Tailwind, TypeScript, Socket.IO, AWS
+--- PROJECT (project.json - deplo.ai) ---
+deplo.ai | AI-powered deployment orchestration platform that automates full-stack
+deployments through infrastructure orchestration, GitHub integrations, and
+environment management. | Tech: Next.js, TypeScript, Python, AWS, Docker, GitHub
 
---- RESUME (LinkUp) ---
-LinkUp - A social networking platform with real-time chat, customizable
-profiles, and instant link sharing. Built with Next.js, MongoDB, TypeScript,
-Socket.IO, and AWS. Implemented WebSocket connections for live updates.
+--- RESUME (deplo.ai) ---
+deplo.ai - A deployment platform with GitHub integration, environment management,
+and seamless rollouts across modern cloud platforms. Built with Next.js,
+TypeScript, Python, AWS, and Docker.
 """
 
 # Total: ~350 chars (well under 6000 limit)
@@ -103,7 +103,7 @@ Socket.IO, and AWS. Implemented WebSocket connections for live updates.
 #### Step 4: LLM Generation
 ```python
 prompt = f"""
-System: You ARE the person whose resume this is. Always use "I built", "I worked", etc.
+System: You ARE Shaik Tajuddin. Answer in the first person — "I built", "I worked", etc.
 
 Context:
 {context}
@@ -114,10 +114,10 @@ Response (concise and direct):
 """
 
 response = llm.generate(prompt)
-# Result: "I built LinkUp, a modern social platform using Next.js, MongoDB,
-#          TypeScript, Socket.IO, and AWS. The app enables real-time chat,
-#          customizable profiles, and instant link sharing. I focused on
-#          scalability and UX, implementing WebSocket connections for live updates."
+# Result: "I built deplo.ai, an AI-powered deployment orchestration platform using
+#          Next.js, TypeScript, Python, AWS, and Docker. It automates full-stack
+#          deployments with GitHub integration and environment management. I focused
+#          on reliability and developer experience."
 ```
 
 ---
@@ -128,25 +128,25 @@ response = llm.generate(prompt)
 
 The system uses **4 intent types** to customize retrieval:
 
-#### Intent: `linkup_only`
+#### Intent: `featured_only`
 **Triggers:** "explain your project", "main project", "most recent project"
 
-**Strategy:** Retrieve ONLY LinkUp, ignore other projects
+**Strategy:** Retrieve ONLY the featured project, ignore other projects
 ```python
-if intent == "linkup_only":
-    context = prioritize_linkup_project(sections, project_data, web_content)
-    # Only includes LinkUp from resume + project.json
+if intent == "featured_only":
+    context = prioritize_featured_project(sections, project_data, web_content)
+    # Only includes the featured project from resume + project.json
 ```
 
 **Why:** Questions using "THE project" (singular) should not mix multiple projects.
 
-#### Intent: `explicit_linkup`
-**Triggers:** "tell me about LinkUp", "what is LinkUp"
+#### Intent: `explicit_featured`
+**Triggers:** "tell me about deplo.ai", "what is deplo.ai"
 
-**Strategy:** Focus on LinkUp, but can include general project info
+**Strategy:** Focus on the featured project, but can include general project info
 ```python
-if intent == "explicit_linkup":
-    context = prioritize_linkup_project(sections, project_data, web_content)
+if intent == "explicit_featured":
+    context = prioritize_featured_project(sections, project_data, web_content)
 ```
 
 #### Intent: `keyword`
@@ -405,19 +405,20 @@ LOG_LEVEL=DEBUG python main.py "tell me about your project"
 
 **Look for:**
 ```
-[rag.question_classifier] Detected intent: linkup_only
-[rag.context_selector] Built LinkUp-only context: 350 chars
+[rag.question_classifier] Detected intent: featured_only
+[rag.context_selector] Built featured-project context: 350 chars
 ```
 
-**Fix:** Ensure LinkUp is in `docs/projects.json` or resume has "LinkUp" heading
+**Fix:** Ensure the featured project is present in `knowledge-base/projects.json`, or that the resume has a heading naming it
 
 ### Issue 2: "Answer includes irrelevant projects"
 
 **Cause:** Intent detection failed, fell back to `general`
 
-**Fix:** Add your main project to `LINKUP_NAMES` in `src/config/settings.py`:
+**Fix:** Point `FEATURED_PROJECT_NAMES` at your main project in `src/config/settings.py`
+(or set the `FEATURED_PROJECT_NAMES` env var, comma-separated):
 ```python
-LINKUP_NAMES = ("linkup", "link-up", "my-project-name")
+FEATURED_PROJECT_NAMES = ("deplo.ai", "deplo-ai", "deplo ai", "deplo")
 ```
 
 ### Issue 3: "Context too small (< 800 chars)"

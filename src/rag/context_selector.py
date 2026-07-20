@@ -21,7 +21,8 @@ class ContextSelector:
     Selects and combines relevant context for answering questions.
     
     Implements intelligent context selection based on question intent,
-    prioritizing LinkUp project when appropriate and managing context size limits.
+    prioritizing the configured featured project when appropriate and managing
+    context size limits.
     """
     
     def __init__(self, max_context_size: int = None):
@@ -35,36 +36,58 @@ class ContextSelector:
         self.classifier = QuestionClassifier()
         logger.info(f"Initialized ContextSelector with max_context_size={self.max_context_size}")
     
-    def _extract_linkup_from_projects(self, projects_section: str) -> str:
+    @staticmethod
+    def _featured_label(project_data: Optional[Dict]) -> str:
         """
-        Extract only LinkUp project block from projects section.
-        
+        Human-readable name of the featured project, for context headers and logs.
+
+        Falls back to the first configured alias when project.json has no match.
+        """
+        if project_data and isinstance(project_data.get("featured"), dict):
+            title = (project_data["featured"].get("title") or "").strip()
+            if title:
+                return title
+        return settings.FEATURED_PROJECT_NAMES[0] if settings.FEATURED_PROJECT_NAMES else "featured project"
+
+    def _mentions_featured(self, text: str) -> bool:
+        """Check whether text mentions the featured project under any configured alias."""
+        if not text:
+            return False
+        low = text.lower()
+        return any(name in low for name in settings.FEATURED_PROJECT_NAMES)
+
+    def _extract_featured_from_projects(self, projects_section: str) -> str:
+        """
+        Extract only the featured project's block from a projects section.
+
         Args:
             projects_section: Full PROJECTS section text.
-        
+
         Returns:
-            str: LinkUp project text only.
+            str: Featured project text only.
         """
-        if not projects_section:
+        if not projects_section or not settings.FEATURED_PROJECT_NAMES:
             return ""
-        
-        # Try to find LinkUp project block
-        linkup_match = re.search(
-            r'(LinkUp|Link-Up)[^\n]*.*?(?=\n\n(?:[A-Z][a-z]+|MealLogger|Melo|EXPERIENCE|EDUCATION|SKILLS)|\Z)',
+
+        # Build the name alternation from configuration so the featured project can
+        # change without touching this code.
+        alias_pattern = "|".join(re.escape(n) for n in settings.FEATURED_PROJECT_NAMES)
+        match = re.search(
+            rf'({alias_pattern})[^\n]*.*?(?=\n\n(?:[A-Z][a-z]+|EXPERIENCE|EDUCATION|SKILLS|INTERNSHIPS)|\Z)',
             projects_section,
             re.DOTALL | re.IGNORECASE
         )
-        
-        if linkup_match:
-            block = linkup_match.group(0).strip()
+
+        if match:
+            block = match.group(0).strip()
             if len(block) > 2000:
                 block = block[:2000] + "..."
-            logger.debug(f"Extracted LinkUp block: {len(block)} chars")
+            logger.debug(f"Extracted featured project block: {len(block)} chars")
             return block
-        
+
         return ""
-    
-    def prioritize_linkup_project(
+
+    def prioritize_featured_project(
         self,
         sections: Dict[str, str],
         project_data: Optional[Dict],
@@ -72,58 +95,105 @@ class ContextSelector:
         full_resume: str
     ) -> str:
         """
-        Build context containing ONLY LinkUp project (no other projects).
-        
+        Build context containing ONLY the featured project (no other projects).
+
         Args:
             sections: Resume sections dictionary.
             project_data: Project JSON data.
             web_content: List of (source, content) tuples from web scraping.
             full_resume: Full resume text.
-        
+
         Returns:
-            str: Context focused exclusively on LinkUp.
+            str: Context focused exclusively on the featured project.
         """
         parts = []
         current_length = 0
-        
-        # 1) project.json LinkUp entry (if available)
-        if project_data and project_data.get("linkup_text"):
-            chunk = "--- PROJECT (project.json - LinkUp) ---\n" + project_data["linkup_text"] + "\n"
+        label = self._featured_label(project_data)
+
+        # 1) projects.json featured entry (if available)
+        if project_data and project_data.get("featured_text"):
+            chunk = f"--- PROJECT (projects.json - {label}) ---\n" + project_data["featured_text"] + "\n"
             if current_length + len(chunk) <= self.max_context_size:
                 parts.append(chunk)
                 current_length += len(chunk)
-                logger.debug("Added LinkUp from project.json")
-        
-        # 2) Resume PROJECTS section: extract only LinkUp block
+                logger.debug("Added featured project from projects.json")
+
+        # 2) Resume PROJECTS section: extract only the featured block
         projects_section = sections.get("PROJECTS") or sections.get("OTHER") or ""
-        linkup_block = self._extract_linkup_from_projects(projects_section)
-        if linkup_block:
-            chunk = "--- RESUME (LinkUp) ---\n" + linkup_block + "\n"
+        featured_block = self._extract_featured_from_projects(projects_section)
+        if featured_block:
+            chunk = f"--- RESUME ({label}) ---\n" + featured_block + "\n"
             if current_length + len(chunk) <= self.max_context_size:
                 parts.append(chunk)
                 current_length += len(chunk)
-                logger.debug("Added LinkUp from resume")
-        
-        # 3) Web content that mentions LinkUp
+                logger.debug("Added featured project from resume")
+
+        # 3) Web content that mentions the featured project
         for source, content in web_content:
-            if content and ("linkup" in content.lower() or "link-up" in content.lower()):
+            if self._mentions_featured(content):
                 chunk = f"--- {source} ---\n" + content[:800] + "\n"
                 if current_length + len(chunk) <= self.max_context_size:
                     parts.append(chunk)
                     current_length += len(chunk)
-                    logger.debug(f"Added LinkUp-related web content from {source}")
+                    logger.debug(f"Added featured-project web content from {source}")
                 break
-        
-        # Fallback if no LinkUp-specific content found
+
+        # Fallback if no featured-specific content found
         if not parts and projects_section:
             trunc = projects_section[:self.max_context_size - 200]
             parts.append("--- RESUME PROJECTS ---\n" + trunc + "\n")
-            logger.warning("No LinkUp-specific content, using general projects")
-        
+            logger.warning("No featured-project content, using general projects")
+
         result = "\n".join(parts) if parts else ""
-        logger.info(f"Built LinkUp-only context: {len(result)} chars")
+        logger.info(f"Built featured-project context: {len(result)} chars")
         return result
     
+    @staticmethod
+    def _projects_named_in(question: str, project_data: Optional[Dict]) -> List[Dict]:
+        """
+        Find projects the question names explicitly (by title or slug).
+
+        Without this, a question like "tell me about ShopSmart" falls through to generic
+        section selection and the project itself never reaches the model.
+        """
+        if not project_data:
+            return []
+
+        q = question.lower()
+        hits = []
+        for entry in project_data.get("entries", []):
+            aliases = {
+                (entry.get("title") or "").strip().lower(),
+                (entry.get("slug") or "").strip().lower().replace("-", " "),
+            }
+            for alias in aliases:
+                # Short aliases produce false positives; word boundaries stop "melo"
+                # matching inside unrelated words.
+                if len(alias) >= 4 and re.search(rf"\b{re.escape(alias)}\b", q):
+                    hits.append(entry)
+                    break
+
+        if hits:
+            logger.info(f"Question names projects: {[h.get('title') for h in hits]}")
+        return hits
+
+    def _build_named_projects_context(self, named: List[Dict]) -> str:
+        """Build context from the specific projects a question named."""
+        parts = []
+        current_length = 0
+
+        for entry in named:
+            title = entry.get("title") or "PROJECT"
+            chunk = f"--- PROJECT ({title}) ---\n{entry.get('text', '')}\n"
+            if current_length + len(chunk) > self.max_context_size:
+                break
+            parts.append(chunk)
+            current_length += len(chunk)
+
+        result = "\n".join(parts)
+        logger.info(f"Built named-project context: {len(result)} chars")
+        return result
+
     def keyword_context_search(
         self,
         keyword: str,
@@ -161,15 +231,15 @@ class ContextSelector:
                 current_length += len(chunk)
                 logger.debug(f"Added keyword match from {header}")
         
-        # Prefer LinkUp if it matches the keyword
-        if project_data and project_data.get("linkup_text"):
-            lt = project_data["linkup_text"]
-            if kw_lower in lt.lower():
-                add_chunk("PROJECT (LinkUp)", lt, 1200)
-        
-        # project.json all projects
+        # Prefer the featured project if it matches the keyword
+        if project_data and project_data.get("featured_text"):
+            ft = project_data["featured_text"]
+            if kw_lower in ft.lower():
+                add_chunk(f"PROJECT ({self._featured_label(project_data)})", ft, 1200)
+
+        # projects.json all projects
         if project_data and project_data.get("text_for_rag"):
-            add_chunk("PROJECTS (project.json)", project_data["text_for_rag"], 2500)
+            add_chunk("PROJECTS (projects.json)", project_data["text_for_rag"], 2500)
         
         # Resume sections
         for name, content in sections.items():
@@ -250,19 +320,32 @@ class ContextSelector:
         intent = self.classifier.detect_project_intent(question)
         logger.info(f"Detected intent: {intent}")
         
-        # 1) LinkUp-only context
-        if intent in ("linkup_only", "explicit_linkup"):
-            ctx = self.prioritize_linkup_project(sections, project_data, web_content, full_resume)
+        # 1) Featured-project-only context
+        if intent in ("featured_only", "explicit_featured"):
+            ctx = self.prioritize_featured_project(sections, project_data, web_content, full_resume)
             if ctx:
                 return ctx
-            # No LinkUp context found
+            # No featured-project context found
+            label = self._featured_label(project_data)
             return (
                 "--- INSTRUCTION ---\n"
-                "The user asked about LinkUp or their main/most recent project. "
-                "No LinkUp-specific context was found in resume or project.json. "
-                "Respond in second person that you do not have LinkUp details in your materials, "
+                f"The user asked about {label} or their main/most recent project. "
+                f"No {label}-specific context was found in the resume or projects.json. "
+                f"Say in the first person that you do not have {label} details in your materials, "
                 "and do not mention other projects."
             )
+
+        # 1.2) A question that names specific projects is answered from those projects,
+        # plus the resume block for grounding. This covers every project, not just the
+        # featured one.
+        named = self._projects_named_in(question, project_data)
+        if named:
+            ctx = self._build_named_projects_context(named)
+            if ctx:
+                projects_section = (sections.get("PROJECTS") or "").strip()
+                if projects_section and len(ctx) + len(projects_section) < self.max_context_size:
+                    ctx += f"\n--- RESUME PROJECTS ---\n{projects_section}\n"
+                return ctx
 
         # 1.5) Optional BM25 retrieval (opt-in)
         # This stays purely lexical (no embeddings/vector DB) to align with project docs by default.
@@ -409,41 +492,42 @@ class ContextSelector:
         """
         Build general context from multiple sources.
         
-        Used when not LinkUp-only or keyword-specific.
+        Used when not featured-project-only or keyword-specific.
         """
         relevant_section_names = self.classifier.classify_sections(question)
         is_project_question = self.classifier.is_project_intent_question(question)
-        
+        label = self._featured_label(project_data)
+
         context_parts = []
         current_length = 0
-        
-        # Prefer project.json LinkUp at top for project questions
-        if is_project_question and project_data and project_data.get("linkup_text"):
-            chunk = "--- PROJECT (project.json - LinkUp) ---\n" + project_data["linkup_text"] + "\n"
+
+        # Prefer the featured project from projects.json at the top for project questions
+        if is_project_question and project_data and project_data.get("featured_text"):
+            chunk = f"--- PROJECT (projects.json - {label}) ---\n" + project_data["featured_text"] + "\n"
             if len(chunk) <= self.max_context_size:
                 context_parts.append(chunk)
                 current_length += len(chunk)
-                logger.debug("Added LinkUp project data for project question")
-        
+                logger.debug("Added featured project data for project question")
+
         # For small resumes, include all sections
         total_resume_size = sum(len(v) for v in sections.values() if v)
         if total_resume_size < 1000:
             relevant_section_names = [k for k, v in sections.items() if v.strip()]
-        
-        # For project questions, prefer LinkUp block only (no mixing)
+
+        # For project questions, prefer the featured block only (no mixing)
         if is_project_question and intent != "keyword":
             projects_section = sections.get('PROJECTS') or sections.get('OTHER') or ''
-            linkup_content = self._extract_linkup_from_projects(projects_section)
-            
-            if linkup_content:
-                header = "--- RESUME (LinkUp) ---"
-                content_chunk = f"{header}\n{linkup_content}\n"
+            featured_content = self._extract_featured_from_projects(projects_section)
+
+            if featured_content:
+                header = f"--- RESUME ({label}) ---"
+                content_chunk = f"{header}\n{featured_content}\n"
                 if current_length + len(content_chunk) <= self.max_context_size:
                     context_parts.append(content_chunk)
                     current_length += len(content_chunk)
                     # Don't add PROJECTS section again
                     relevant_section_names = [s for s in relevant_section_names if s != 'PROJECTS']
-                    logger.debug("Added LinkUp resume block for project question")
+                    logger.debug("Added featured resume block for project question")
         
         # Add relevant sections
         added_sections = []

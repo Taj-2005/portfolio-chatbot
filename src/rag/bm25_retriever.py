@@ -97,8 +97,8 @@ def build_chunks_from_sources(
 
     # project.json normalized text
     if project_data:
-        if project_data.get("linkup_text"):
-            chunks.append(Chunk(source="PROJECT_LINKUP", text=str(project_data["linkup_text"])))
+        if project_data.get("featured_text"):
+            chunks.append(Chunk(source="PROJECT_FEATURED", text=str(project_data["featured_text"])))
         if project_data.get("text_for_rag"):
             chunks.append(Chunk(source="PROJECTS_JSON", text=str(project_data["text_for_rag"])))
 

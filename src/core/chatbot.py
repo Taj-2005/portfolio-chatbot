@@ -116,10 +116,11 @@ class PortfolioChatbot:
         
         # Load project data
         self.project_data = self.project_loader.load_project_json()
-        if self.project_data and self.project_data.get("linkup"):
-            self._emit("[CTX] project.json/projects.json loaded (LinkUp as primary project)")
+        if self.project_data and self.project_data.get("featured"):
+            featured_title = self.project_data["featured"].get("title") or "featured project"
+            self._emit(f"[CTX] projects.json loaded ({featured_title} as featured project)")
         elif self.project_data:
-            self._emit("[CTX] project.json/projects.json loaded")
+            self._emit("[CTX] projects.json loaded")
         
         # Process GitHub links
         if self.links:
@@ -163,36 +164,31 @@ class PortfolioChatbot:
         similarity = len(intersection) / len(union) if union else 0.0
         
         cached_answer = similar.get('answer', '')
-        
-        # Validate cache for project questions
-        if self.classifier.is_project_intent_question(question):
-            has_linkup = 'linkup' in cached_answer.lower() or 'link-up' in cached_answer.lower()
-            if not has_linkup and 'meallogger' in cached_answer.lower():
-                logger.info("Cached answer invalid (wrong project) — regenerating")
-                print("[MEMORY] Cached answer invalid (wrong project) — regenerating")
+
+        # Questions that must be answered with the featured project only: a cached answer
+        # that never names it is stale (e.g. it predates a featured-project change).
+        intent = self.classifier.detect_project_intent(question)
+        if intent in ("featured_only", "explicit_featured") and settings.FEATURED_PROJECT_NAMES:
+            answer_lower = cached_answer.lower()
+            if not any(name in answer_lower for name in settings.FEATURED_PROJECT_NAMES):
+                logger.info("Cached answer invalid (missing featured project) — regenerating")
+                self._emit("[MEMORY] Cached answer invalid (wrong project) — regenerating")
                 return None
-            
-            is_valid_cache = (
-                similarity > 0.75 and
-                cached_answer and
-                'not found' not in cached_answer.lower() and
-                len(cached_answer.split()) > 5
-            )
-        else:
-            is_valid_cache = (
-                similarity > 0.75 and
-                cached_answer and
-                'not found' not in cached_answer.lower() and
-                len(cached_answer.split()) > 5
-            )
-        
+
+        is_valid_cache = (
+            similarity > 0.75 and
+            cached_answer and
+            'not found' not in cached_answer.lower() and
+            len(cached_answer.split()) > 5
+        )
+
         if is_valid_cache:
             logger.info("Using cached answer from memory")
-            print("\n💾 Using cached answer from memory (high similarity match)\n")
+            self._emit("\n💾 Using cached answer from memory (high similarity match)\n")
             return cached_answer
         
         if similarity > 0.75 and not is_valid_cache:
-            print("\n[MEMORY] Cached answer invalid — regenerating")
+            self._emit("\n[MEMORY] Cached answer invalid — regenerating")
         
         return None
     

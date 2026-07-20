@@ -78,13 +78,39 @@ class Settings:
     SEARCHAPI_MAX_RESULTS: int = 3
     SEARCHAPI_RESULTS_TO_USE: int = 2
     
-    LINKUP_NAMES: tuple = ("linkup", "link-up", "link up")
+    # Owner identity (used for grounding, never guessed by the LLM).
+    OWNER_NAME: str = "Shaik Tajuddin"
+    PORTFOLIO_URL: str = os.getenv("PORTFOLIO_URL", "https://www.taju.dev")
+
+    # The project the assistant leads with for "your project" / "main project" questions.
+    # Matched against project title and slug in projects.json (case-insensitive substring).
+    # Override with a comma-separated env var, e.g. FEATURED_PROJECT_NAMES="shopsmart,shop smart".
+    FEATURED_PROJECT_NAMES: tuple = tuple(
+        n.strip().lower()
+        for n in os.getenv("FEATURED_PROJECT_NAMES", "deplo.ai,deplo-ai,deplo ai,deplo").split(",")
+        if n.strip()
+    )
     PROJECT_JSON_NAMES: tuple = ("project.json", "projects.json")
-    
+
     KEYWORD_TECH_PATTERNS: tuple = (
-        "firebase", "react native", "real-time", "realtime", "chat", "auth",
-        "next.js", "nextjs", "mongodb", "socket", "typescript", "tailwind",
-        "aws", "node", "express", "gemini", "ai", "nodemailer", "shadcn",
+        # languages / core
+        "typescript", "javascript", "python", "c++", "java", "sql", "bash",
+        # web / frontend
+        "next.js", "nextjs", "react native", "react", "tailwind", "zustand",
+        "framer motion", "expo",
+        # backend / data
+        "fastapi", "express", "node", "prisma", "postgres", "postgresql",
+        "mongodb", "firebase", "dynamodb", "redis", "socket",
+        # cloud / devops
+        "aws", "gcp", "google cloud", "cloudflare", "terraform", "docker",
+        "kubernetes", "github actions", "ci/cd", "amplify", "cognito", "lambda",
+        "s3", "vercel",
+        # ai / ml
+        "ai", "ml", "llm", "genai", "rag", "langchain", "langgraph", "groq",
+        "vertex ai", "yolo", "computer vision", "tensorflow", "hugging face",
+        # product / other
+        "deployment", "deploy", "auth", "rbac", "mfa", "real-time", "realtime",
+        "offline", "figma", "jira",
     )
     
     SUPPORTED_RESUME_FORMATS: dict = {

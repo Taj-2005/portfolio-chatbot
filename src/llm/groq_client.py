@@ -56,60 +56,62 @@ class GroqClient:
         Returns:
             str: System prompt instructing the LLM on behavior.
         """
-        return """You ARE the person whose resume this is. You speak in second person only.
+        return f"""You ARE {settings.OWNER_NAME}, the person whose resume and portfolio this is.
+You answer in the FIRST PERSON, as yourself.
 
 CRITICAL RULES:
 - Always use "I": "I built", "I worked on", "I focused on", "I used".
-- NEVER use "you", "the candidate", "the developer", "they built", "he/she worked".
-- If asked about projects, answer only about the project(s) in the context (e.g. LinkUp when that is provided). Do not mix or invent projects.
-- Use the provided context (resume, project.json, GitHub). Only say "Not found" if there is truly no relevant information.
-- For "explain your project" or "most recent project" or "LinkUp": answer ONLY about LinkUp using the context given.
+- NEVER refer to yourself as "the candidate", "the developer", "he", "she", or "they".
+- Ground every claim in the provided context (profile, resume, projects.json, knowledge base,
+  GitHub). Never invent employers, dates, metrics, projects, or links.
+- Only say you don't have that information if the context genuinely lacks it.
+- If asked about a project, answer only about the project(s) present in the context. Do not
+  mix projects together and do not substitute a different one.
+- Current roles: Founder of deplo.ai (https://www.deplo.in) and Product & Software Engineer at
+  Maverick Secure LLC. Never describe an internship as my current role.
+- When asked for a link, give exactly the URL from the context — portfolio is
+  {settings.PORTFOLIO_URL}, and deplo.ai lives at https://www.deplo.in.
 
 Response style:
-- second person, confident, professional
+- first person, confident, professional
 - 4–7 short bullet points OR a short paragraph
-- Maximum 120 words
+- Maximum {settings.MAX_RESPONSE_WORDS} words
 - No raw file dumps, no config lists
 - UX-friendly explanations"""
     
     @staticmethod
-    def enforce_second_person_voice(response: str) -> str:
+    def enforce_first_person_voice(response: str) -> str:
         """
-        Post-process LLM output to fix third-person phrasing.
-        
-        Replaces common patterns like "you worked", "the candidate", etc.
-        with proper second-person voice ("I worked").
-        
+        Post-process LLM output to fix second/third-person phrasing.
+
+        Replaces patterns like "you worked", "the candidate built" with the
+        first-person voice the assistant is supposed to speak in ("I worked").
+
         Args:
             response: Raw LLM response.
-        
+
         Returns:
             str: Response with corrected voice.
         """
         if not response or len(response) < 10:
             return response
-        
-        replacements = [
-            (r"\bYou\s+worked\b", "I worked"),
-            (r"\byou\s+worked\b", "I worked"),
-            (r"\bThe\s+candidate\s+", "I "),
-            (r"\bthe\s+candidate\s+", "I "),
-            (r"\bThe\s+developer\s+", "I "),
-            (r"\bthe\s+developer\s+", "I "),
-            (r"\bThis\s+candidate\s+", "I "),
-            (r"\bThis\s+developer\s+", "I "),
-            (r"\bThey\s+built\b", "I built"),
-            (r"\bthey\s+built\b", "I built"),
-            (r"\bHe\s+built\b", "I built"),
-            (r"\bShe\s+built\b", "I built"),
-            (r"\bHe\s+worked\b", "I worked"),
-            (r"\bShe\s+worked\b", "I worked"),
+
+        # Matching is case-insensitive, so one pattern per phrase is enough.
+        verbs = r"(?:built|worked|developed|created|led|designed|engineered|shipped)"
+        patterns = [
+            rf"\b(?:the|this)\s+(?:candidate|developer|engineer)\s+{verbs}\b",
+            rf"\byou\s+{verbs}\b",
+            rf"\b(?:he|she|they)\s+{verbs}\b",
         ]
-        
+
+        def to_first_person(match) -> str:
+            verb = match.group(0).split()[-1].lower()
+            return f"I {verb}"
+
         result = response
-        for pattern, replacement in replacements:
-            result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
-        
+        for pattern in patterns:
+            result = re.sub(pattern, to_first_person, result, flags=re.IGNORECASE)
+
         return result
     
     def generate_response(
@@ -165,7 +167,7 @@ RESPONSE (concise and direct):"""
             
             # Extract and post-process answer
             answer = response.choices[0].message.content.strip()
-            answer = self.enforce_second_person_voice(answer)
+            answer = self.enforce_first_person_voice(answer)
             
             # Enforce word limit
             words = answer.split()

@@ -157,10 +157,10 @@ User Question
 **Processing**:
 1. **Tokenization**: Split into words: `["what's", "your", "most", "recent", "project"]`
 2. **Pattern matching**: Detect "most recent project" pattern
-3. **Intent classification**: Mark as `linkup_only` (main project question)
+3. **Intent classification**: Mark as `featured_only` (main project question)
 4. **Section identification**: Classify as `PROJECTS` relevant
 
-**Output**: Intent = `linkup_only`, Sections = `["PROJECTS"]`
+**Output**: Intent = `featured_only`, Sections = `["PROJECTS"]`
 
 ### Stage 2: Context Retrieval (RAG)
 
@@ -168,19 +168,19 @@ User Question
 
 **Processing**:
 1. **Load resume sections**: Read EXPERIENCE, PROJECTS, SKILLS from parsed resume
-2. **Load project data**: Read `projects.json`, identify LinkUp as primary
-3. **Filter by intent**: Since `linkup_only`, extract only LinkUp content
+2. **Load project data**: Read `projects.json`, identify the featured project (deplo.ai) as primary
+3. **Filter by intent**: Since `featured_only`, extract only the featured project content
 4. **Rank sources**: Resume (priority 1) > project.json (priority 2) > web (priority 3)
 5. **Combine & truncate**: Merge sources, limit to 6000 chars
 
 **Output**: 
 ```
---- PROJECT (project.json - LinkUp) ---
-LinkUp | A modern social platform built to help people connect...
-Tech: Next.js, MongoDB, Tailwind, TypeScript, Socket.IO, AWS
+--- PROJECT (project.json - deplo.ai) ---
+deplo.ai | AI-powered deployment orchestration for developers...
+Tech: Next.js, TypeScript, Python, AWS, Docker, GitHub
 
---- RESUME (LinkUp) ---
-LinkUp - A social networking platform with real-time chat...
+--- RESUME (deplo.ai) ---
+deplo.ai - A deployment platform with GitHub integration and env management...
 ```
 
 ### Stage 3: LLM Generation
@@ -195,9 +195,9 @@ LinkUp - A social networking platform with real-time chat...
 
 **Output**: 
 ```
-I built LinkUp, a modern social platform using Next.js, MongoDB, TypeScript, 
-Socket.IO, and AWS. The app enables real-time chat, customizable profiles, 
-and instant link sharing. I focused on scalability and UX, implementing 
+I built deplo.ai, an AI-powered deployment platform using Next.js, TypeScript, Python, 
+AWS, and Docker. It automates full-stack deployments with GitHub integration, 
+environment management, and seamless rollouts. I focused on reliability and DX, implementing 
 WebSocket connections for live updates and AWS S3 for media storage.
 ```
 
@@ -237,7 +237,7 @@ WebSocket connections for live updates and AWS S3 for media storage.
 if "skills" in question:
     return "My skills include Python, JavaScript, React..."
 elif "project" in question:
-    return "My projects include LinkUp, AlgoJourney..."
+    return "My projects include deplo.ai, ShopSmart..."
 ```
 
 **Limitations:**

@@ -2,7 +2,7 @@
 Project data loading functionality.
 
 Loads project information from JSON files (project.json or projects.json)
-and identifies the primary project (LinkUp).
+and identifies the featured project (configured in settings.FEATURED_PROJECT_NAMES).
 """
 
 import json
@@ -56,30 +56,40 @@ class ProjectLoader:
                 parts.append("Tech: " + ", ".join(names))
         else:
             parts.append("Tech: " + str(tech))
-        
+
+        # Links matter: the assistant is regularly asked "where can I see it?".
+        if project.get("livelink"):
+            parts.append("Live: " + project["livelink"])
+        if project.get("github"):
+            parts.append("GitHub: " + project["github"])
+        if project.get("linkedin"):
+            parts.append("LinkedIn: " + project["linkedin"])
+        if project.get("apiDocs"):
+            parts.append("API docs: " + project["apiDocs"])
+
         return " | ".join(p for p in parts if p)
     
-    def _find_linkup_project(self, projects: List[Dict]) -> Optional[Dict]:
+    def _find_featured_project(self, projects: List[Dict]) -> Optional[Dict]:
         """
-        Find LinkUp project from list of projects.
+        Find featured project from list of projects.
         
         Args:
             projects: List of project dictionaries.
         
         Returns:
-            Optional[Dict]: LinkUp project if found, None otherwise.
+            Optional[Dict]: featured project if found, None otherwise.
         """
         for entry in projects:
             title = (entry.get("title") or "").strip().lower()
             slug = (entry.get("slug") or "").strip().lower()
             
-            # Check if this is the LinkUp project
-            for linkup_name in settings.LINKUP_NAMES:
-                if linkup_name in title or linkup_name in slug:
-                    logger.info(f"Found LinkUp project: {entry.get('title')}")
+            # Check if this is the featured project
+            for featured_name in settings.FEATURED_PROJECT_NAMES:
+                if featured_name in title or featured_name in slug:
+                    logger.info(f"Found featured project: {entry.get('title')}")
                     return entry
         
-        logger.warning("LinkUp project not found in project data")
+        logger.warning("featured project not found in project data")
         return None
     
     def load_project_json(self) -> Optional[Dict]:
@@ -87,14 +97,14 @@ class ProjectLoader:
         Load project data from JSON file.
         
         Searches for project.json or projects.json in docs directory.
-        Normalizes different JSON structures and identifies LinkUp project.
+        Normalizes different JSON structures and identifies featured project.
         
         Returns:
             Optional[Dict]: Dictionary containing:
                 - 'projects': List of all projects
-                - 'linkup': LinkUp project dict (or None)
+                - 'featured': featured project dict (or None)
                 - 'text_for_rag': Combined text of all projects
-                - 'linkup_text': Text representation of LinkUp project
+                - 'featured_text': Text representation of the featured project
         """
         raw = None
         loaded_file = None
@@ -136,8 +146,8 @@ class ProjectLoader:
             logger.warning(f"No projects found in {loaded_file}")
             return None
         
-        # Find LinkUp project
-        linkup_entry = self._find_linkup_project(all_entries)
+        # Find featured project
+        featured_entry = self._find_featured_project(all_entries)
         
         # Convert all projects to text for RAG
         text_parts = [self._project_to_text(p) for p in all_entries]
@@ -145,14 +155,24 @@ class ProjectLoader:
         
         result = {
             "projects": all_entries,
-            "linkup": linkup_entry,
+            "featured": featured_entry,
             "text_for_rag": text_for_rag,
-            "linkup_text": self._project_to_text(linkup_entry) if linkup_entry else "",
+            "featured_text": self._project_to_text(featured_entry) if featured_entry else "",
+            # Per-project lookup so retrieval can answer "tell me about <project name>"
+            # for any project, not just the featured one.
+            "entries": [
+                {
+                    "title": p.get("title") or "",
+                    "slug": p.get("slug") or "",
+                    "text": self._project_to_text(p),
+                }
+                for p in all_entries
+            ],
         }
         
         logger.info(
             f"Project data loaded: {len(all_entries)} total projects, "
-            f"LinkUp={'found' if linkup_entry else 'not found'}"
+            f"featured={'found' if featured_entry else 'not found'}"
         )
         
         return result

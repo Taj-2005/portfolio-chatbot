@@ -102,7 +102,7 @@ Not all questions are equal! The system classifies questions into two types:
 #### Complex Questions (Specific/Detailed)
 
 **Examples:**
-- "What's the architecture of LinkUp?"
+- "What's the architecture of deplo.ai?"
 - "How did you implement real-time chat?"
 - "Which project uses MongoDB and TypeScript?"
 
@@ -199,11 +199,11 @@ if is_easy and similar.get('is_easy'):
 
 **For project questions (extra validation):**
 ```python
-if is_project_question(question):
-    has_linkup = 'linkup' in cached_answer.lower()
-    if not has_linkup and 'meallogger' in cached_answer.lower():
-        # ❌ Cached answer mentions wrong project!
-        print("[MEMORY] Cached answer invalid (wrong project) — regenerating")
+intent = classifier.detect_project_intent(question)
+if intent in ("featured_only", "explicit_featured"):
+    if not any(name in cached_answer.lower() for name in settings.FEATURED_PROJECT_NAMES):
+        # ❌ Cached answer never names the featured project — it is stale.
+        self._emit("[MEMORY] Cached answer invalid (wrong project) — regenerating")
         return None  # Force regeneration
 ```
 
@@ -267,7 +267,7 @@ def store_interaction(question, answer, sections_used):
   },
   {
     "question": "Tell me about your most recent project",
-    "answer": "I built LinkUp, a modern social platform using Next.js, MongoDB, TypeScript, Socket.IO, and AWS. The app enables real-time chat, customizable profiles, and instant link sharing.",
+    "answer": "I built deplo.ai, an AI-powered deployment orchestration platform using Next.js, TypeScript, Python, AWS, and Docker. It automates full-stack deployments through infrastructure orchestration, GitHub integrations, and environment management.",
     "sections_used": ["PROJECTS"],
     "timestamp": "2024-02-10T10:16:45.789012",
     "question_hash": "b2c9d7e3a5f1...",

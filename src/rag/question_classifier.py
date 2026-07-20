@@ -49,9 +49,11 @@ class QuestionClassifier:
         ]):
             relevant_sections.append('SKILLS')
         
-        # Experience-related keywords
+        # Experience-related keywords (includes founder/startup framing)
         if any(kw in question_lower for kw in [
-            'experience', 'work', 'job', 'role', 'position', 'company', 'hired'
+            'experience', 'work', 'job', 'role', 'position', 'company', 'hired',
+            'intern', 'internship', 'founder', 'founded', 'startup', 'currently',
+            'current', 'now', 'deplo', 'maverick'
         ]):
             relevant_sections.append('EXPERIENCE')
         
@@ -66,6 +68,19 @@ class QuestionClassifier:
             'about', 'yourself', 'who', 'background', 'summary', 'overview'
         ]):
             relevant_sections.extend(['SUMMARY', 'EXPERIENCE', 'SKILLS'])
+
+        # Identity, "what are you doing now", and contact/link questions are answered from
+        # profile facts (founder role, current title, canonical URLs). Those live in the
+        # knowledge base, which the chatbot merges into the OTHER section — the resume
+        # alone cannot answer them. OTHER is appended last so resume sections keep priority.
+        if any(kw in question_lower for kw in [
+            'contact', 'email', 'reach', 'link', 'website', 'url', 'linkedin',
+            'github', 'resume', 'cv', 'portfolio', 'hire', 'phone',
+            'about', 'yourself', 'who', 'background', 'overview',
+            'currently', 'current', 'now', 'today', 'these days', 'still',
+            'founder', 'founded', 'startup', 'deplo'
+        ]):
+            relevant_sections.append('OTHER')
         
         # Default to broad sections if no specific match
         if not relevant_sections:
@@ -117,9 +132,9 @@ class QuestionClassifier:
         return False
     
     @staticmethod
-    def requires_linkup_only(question: str) -> bool:
+    def requires_featured_project_only(question: str) -> bool:
         """
-        Determine if question should be answered with LinkUp only.
+        Determine if question should be answered with the featured project only.
         
         These are questions that ask for "the" project or "main" project,
         implying a single project response.
@@ -128,7 +143,7 @@ class QuestionClassifier:
             question: User's question.
         
         Returns:
-            bool: True if only LinkUp should be mentioned.
+            bool: True if only the featured project should be mentioned.
         """
         q = question.lower().strip()
         patterns = [
@@ -142,27 +157,27 @@ class QuestionClassifier:
         
         for p in patterns:
             if re.search(p, q):
-                logger.debug(f"Requires LinkUp-only response: {p}")
+                logger.debug(f"Requires featured-project-only response: {p}")
                 return True
         
         return False
     
     @staticmethod
-    def has_explicit_linkup_mention(question: str) -> bool:
+    def has_explicit_featured_mention(question: str) -> bool:
         """
-        Check if question explicitly mentions LinkUp.
+        Check if question explicitly mentions the featured project by name.
         
         Args:
             question: User's question.
         
         Returns:
-            bool: True if LinkUp is explicitly mentioned.
+            bool: True if the featured project is explicitly mentioned.
         """
         q = question.lower()
-        mentioned = any(name in q for name in settings.LINKUP_NAMES)
+        mentioned = any(name in q for name in settings.FEATURED_PROJECT_NAMES)
         
         if mentioned:
-            logger.debug("Explicit LinkUp mention detected")
+            logger.debug("Explicit featured-project mention detected")
         
         return mentioned
     
@@ -175,15 +190,15 @@ class QuestionClassifier:
             question: User's question.
         
         Returns:
-            str: Intent type - 'linkup_only', 'explicit_linkup', 'keyword', or 'general'.
+            str: Intent type - 'featured_only', 'explicit_featured', 'keyword', or 'general'.
         """
-        # Check for explicit LinkUp mention
-        if QuestionClassifier.has_explicit_linkup_mention(question):
-            return 'explicit_linkup'
+        # Check for explicit featured-project mention
+        if QuestionClassifier.has_explicit_featured_mention(question):
+            return 'explicit_featured'
         
-        # Check if should only mention LinkUp
-        if QuestionClassifier.requires_linkup_only(question):
-            return 'linkup_only'
+        # Check if only the featured project should be mentioned
+        if QuestionClassifier.requires_featured_project_only(question):
+            return 'featured_only'
         
         # Check for tech keyword mentions
         q = question.lower()

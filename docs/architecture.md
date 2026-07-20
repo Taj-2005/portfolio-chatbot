@@ -105,24 +105,24 @@ parsers/
 ├── project_loader.py
 │   └── ProjectLoader
 │       ├── _project_to_text()
-│       ├── _find_linkup_project()
+│       ├── _find_featured_project()
 │       └── load_project_json() → project_data
 └── __init__.py
 ```
 
 **Data Flow:**
 ```
-docs/resume.pdf ──→ ResumeLoader ──→ {
+knowledge-base/RESUME.md ──→ ResumeLoader ──→ {
     "EXPERIENCE": "...",
     "PROJECTS": "...",
     "SKILLS": "...",
     ...
 }
 
-docs/projects.json ──→ ProjectLoader ──→ {
+knowledge-base/projects.json ──→ ProjectLoader ──→ {
     "projects": [...],
-    "linkup": {...},
-    "linkup_text": "..."
+    "featured": {...},
+    "featured_text": "..."
 }
 ```
 
@@ -231,13 +231,13 @@ rag/
 │   └── QuestionClassifier
 │       ├── classify_sections() → ["SKILLS", "EXPERIENCE", ...]
 │       ├── is_project_intent_question() → bool
-│       ├── requires_linkup_only() → bool
-│       ├── has_explicit_linkup_mention() → bool
-│       ├── detect_project_intent() → "linkup_only" | "keyword" | ...
+│       ├── requires_featured_project_only() → bool
+│       ├── has_explicit_featured_mention() → bool
+│       ├── detect_project_intent() → "featured_only" | "keyword" | ...
 │       └── extract_keyword_from_question() → "firebase" | ...
 ├── context_selector.py
 │   └── ContextSelector
-│       ├── prioritize_linkup_project() → linkup_context
+│       ├── prioritize_featured_project() → featured_context
 │       ├── keyword_context_search() → keyword_context
 │       ├── _rank_context_sources() → ranked_sources
 │       ├── select_relevant_context() → final_context
@@ -253,17 +253,17 @@ QuestionClassifier.detect_project_intent()
     ↓
     ┌─────────────────────────────────┐
     │ Check patterns:                 │
-    │ 1. Explicit LinkUp? → explicit  │
-    │ 2. "Main project"? → linkup_only│
+    │ 1. Explicit featured project? → explicit  │
+    │ 2. "Main project"? → featured_only│
     │ 3. Tech keyword? → keyword      │
     │ 4. Default → general            │
     └─────────────────────────────────┘
     ↓
-Intent: "linkup_only"
+Intent: "featured_only"
     ↓
-ContextSelector.prioritize_linkup_project()
+ContextSelector.prioritize_featured_project()
     ↓
-Context: "--- PROJECT (LinkUp) --- ..."
+Context: "--- PROJECT (deplo.ai) --- ..."
 ```
 
 **Context Ranking:**
@@ -284,7 +284,7 @@ llm/
 ├── groq_client.py
 │   └── GroqClient
 │       ├── _get_system_prompt() → system_prompt
-│       ├── enforce_second_person_voice() → corrected_text
+│       ├── enforce_first_person_voice() → corrected_text
 │       └── generate_response() → answer
 └── __init__.py
 ```
